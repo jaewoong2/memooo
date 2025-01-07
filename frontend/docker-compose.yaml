@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  bamtoly:
+    platform: linux/amd64
+    image: 849441246713.dkr.ecr.ap-northeast-2.amazonaws.com/bamtoly/front_bamtoly:latest
+    build:
+      dockerfile: Dockerfile
+      args:
+        PROJECT_NAME: bamtoly
+    environment:
+      - NODE_ENV=production
+      - PROJECT_NAME=bamtoly
+
