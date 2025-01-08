@@ -1,13 +1,12 @@
 'use client';
 
-import { CameraIcon, FolderOpenIcon } from 'lucide-react';
+import { CameraIcon, FolderOpenIcon, GlassWaterIcon } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 
 import FileCaptureInput from '@/components/atoms/FileCaptureInput';
 import CarouselComponent from '@/components/blocks/Carousel';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import Checkbox from '@/components/ui/checkbox2';
 import { cn } from '@/lib/utils';
 
 export default function Main() {
@@ -58,19 +57,24 @@ export default function Main() {
           <div className='w-full'>
             <div className='flex w-full flex-col items-center justify-center rounded-lg border bg-background py-2'>
               <ul className='flex w-full flex-col justify-start gap-2 px-3'>
-                <li className='w-full py-1'>
-                  <p className='flex items-center gap-1 text-lg'>
-                    <Checkbox />물 마시기
-                  </p>
-                  <div className='flex w-full justify-start gap-1 pr-2'>
-                    {[1, 2, 3, 4, 5, 6, 7].map((value) => (
-                      <div
-                        key={value}
-                        className='flex aspect-square h-auto w-full items-center justify-center rounded-2xl border bg-red-50'
-                      >
-                        {value}
-                      </div>
-                    ))}
+                <li className='flex w-full items-center justify-center gap-4 py-1'>
+                  <span>
+                    <GlassWaterIcon />
+                  </span>
+                  <div className='flex w-full flex-col'>
+                    <div className='flex items-center gap-1 text-lg'>
+                      <p>물 마시기</p>
+                    </div>
+                    <div className='flex w-full justify-start gap-1 pr-2'>
+                      {[1, 2, 3, 4, 5, 6, 7].map((value) => (
+                        <div
+                          key={value}
+                          className='flex aspect-square h-auto w-full items-center justify-center rounded-2xl border bg-red-50'
+                        >
+                          {value}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </li>
               </ul>
