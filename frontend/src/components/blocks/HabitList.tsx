@@ -8,13 +8,7 @@ import { useMemo, useState } from "react";
 export default function HabitList() {
   const { data: user } = useUserGetMe();
 
-  const {
-    data,
-    hasNextPage,
-    fetchNextPage,
-    hasPreviousPage,
-    fetchPreviousPage,
-  } = useInfiniteGetAllHabbits({
+  const habbits = useInfiniteGetAllHabbits({
     params: { page: 0, take: 10 },
     enabled: Boolean(user?.data?.id),
   });
@@ -22,19 +16,19 @@ export default function HabitList() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const habits = useMemo(() => {
-    return data?.pages[currentPage - 1]?.data?.data ?? [];
-  }, [data, currentPage]);
+    return habbits?.data?.pages[currentPage - 1]?.data?.data ?? [];
+  }, [habbits, currentPage]);
 
   const onClickNextPage = () => {
-    if (!data?.pages[currentPage - 1].data.meta?.hasNextPage) {
+    if (!habbits?.data?.pages[currentPage - 1].data.meta?.hasNextPage) {
       return;
     }
     setCurrentPage((prev) => prev + 1);
 
-    if (!hasNextPage) {
+    if (!habbits?.hasNextPage) {
       return;
     }
-    fetchNextPage();
+    habbits?.fetchNextPage();
   };
   const onClickPrevPage = () => {
     if (currentPage === 1) {
@@ -42,10 +36,10 @@ export default function HabitList() {
     }
     setCurrentPage((prev) => prev - 1);
 
-    if (!hasPreviousPage) {
+    if (!habbits?.hasPreviousPage) {
       return;
     }
-    fetchPreviousPage();
+    habbits?.fetchPreviousPage();
   };
 
   return (
@@ -53,7 +47,7 @@ export default function HabitList() {
       <>
         <p>내 습관</p>
         <ul className="flex w-full flex-col justify-start gap-2">
-          {habits.map(({ title, icon, records }) => (
+          {habits?.map(({ title, icon, records }) => (
             <HabitCard
               icon={icon}
               key={title}

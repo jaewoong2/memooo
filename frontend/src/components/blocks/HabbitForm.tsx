@@ -39,6 +39,8 @@ import {
   useInfiniteGetAllHabbits,
   useUpdateHabbit,
 } from "@/apis/services/habbits/useHabbitService";
+import { useRouter } from "next/navigation";
+import DeleteHabitButton from "./DeleteHabitButton";
 
 const habitIcons = [
   { value: "star", Icon: StarIcon },
@@ -76,16 +78,35 @@ type Props = {
   title: string;
 };
 
+function isStringValid(string?: any) {
+  if (typeof string !== "string") return false;
+  if (string === "") return false;
+  if (!string) return false;
+
+  return true;
+}
+
 const HabbitForm = ({ title }: Props) => {
-  const { data: habbit } = useGetHabbit({ title });
+  const { data: habbit } = useGetHabbit(
+    { title },
+    { enabled: isStringValid(title) },
+  );
   const { mutate: updateHabbit } = useUpdateHabbit();
   const { mutate: createHabbit } = useCreateHabbit();
-  const { data: habbits } = useInfiniteGetAllHabbits({ params: { page: 1 } });
-  const [isInput, setIsInput] = useState(false);
+  const router = useRouter();
+
+  const habbits = useInfiniteGetAllHabbits({
+    params: { page: 1 },
+    enabled: isStringValid(title),
+  });
+  const [isInput, setIsInput] = useState(() => {
+    if (isStringValid(title)) return false;
+    return true;
+  });
 
   const habitList = useMemo(() => {
-    return habbits?.pages.flatMap(({ data }) => data.data);
-  }, []);
+    return habbits?.data.pages.flatMap(({ data }) => data.data);
+  }, [habbits?.data.pages]);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -94,13 +115,21 @@ const HabbitForm = ({ title }: Props) => {
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     if (!habbit?.data?.id) {
-      createHabbit({
-        title: data.name,
-        icon: data.icon,
-        group: "default",
-      });
+      createHabbit(
+        {
+          title: data.name,
+          icon: data.icon,
+          group: "default",
+        },
+        {
+          onSuccess() {
+            router.back();
+          },
+        },
+      );
       return;
     }
+
     updateHabbit({
       habbitId: habbit.data.id,
       title: data.name,
@@ -110,13 +139,13 @@ const HabbitForm = ({ title }: Props) => {
   };
 
   const onChangeValue =
-    (field: ControllerRenderProps<any>) => (value: string) => {
+    (field: ControllerRenderProps<any>) => (value: string | null) => {
       if (field.name === "name" && value === "추가") {
         setIsInput(true);
         return;
       }
 
-      if (field.name === "name" && value === "") {
+      if (field.name === "name" && value === null) {
         setIsInput(false);
         return;
       }
@@ -166,7 +195,7 @@ const HabbitForm = ({ title }: Props) => {
                             }
                           />
                           <Button
-                            onClick={() => onChangeValue(field)("")}
+                            onClick={() => onChangeValue(field)(null)}
                             className="right-0 top-0 absolute hover:bg-transparent"
                             variant="ghost"
                             type="button"
@@ -185,7 +214,7 @@ const HabbitForm = ({ title }: Props) => {
                             <SelectValue placeholder="내 습관" />
                           </SelectTrigger>
                           <SelectContent>
-                            {habitList.map(
+                            {habitList?.map(
                               (data) =>
                                 data && (
                                   <SelectItem
@@ -263,13 +292,19 @@ const HabbitForm = ({ title }: Props) => {
             >
               {habbit?.data?.id ? "수정하기" : "습관 만들기"}
             </Button>
-            <Button
-              type="button"
-              className="w-full col-span-3 max-md:col-span-1"
-              variant={"destructive"}
-            >
-              삭제
-            </Button>
+            {habbit?.data?.id && (
+              <DeleteHabitButton
+                habitId={habbit.data.id}
+                onClick={() => {
+                  router.back();
+                }}
+                title={title}
+                type="button"
+                className="w-full col-span-3 max-md:col-span-1"
+              >
+                삭제
+              </DeleteHabitButton>
+            )}
           </div>
         </div>
       </form>

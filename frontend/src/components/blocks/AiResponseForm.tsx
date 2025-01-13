@@ -57,11 +57,11 @@ const AiResponseForm = ({ imageUrl }: AiResponseFormProps) => {
   const { mutate: recordHabit } = useRecordHabbit();
   const { mutate: addToCalander } = useAddToCalander();
 
-  const { data: habbits } = useInfiniteGetAllHabbits({ params: { page: 1 } });
+  const habits = useInfiniteGetAllHabbits({ params: { page: 1 } });
 
   const habitList = useMemo(
-    () => habbits?.pages.flatMap(({ data }) => data.data) ?? [],
-    [habbits],
+    () => habits?.data?.pages.flatMap(({ data }) => data.data) ?? [],
+    [habits],
   );
 
   const [isInput, setIsInput] = useState(false);

@@ -42,7 +42,6 @@ const ImageResultPage = () => {
               className="object-contain"
             />
           </div>
-          {/* <HabbitForm title={decodeURIComponent(title ?? "")} /> */}
           {imageUrl && <AiResponseForm imageUrl={imageUrl} />}
         </div>
       </DialogContent>

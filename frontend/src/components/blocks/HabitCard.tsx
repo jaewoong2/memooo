@@ -35,10 +35,10 @@ const habitIcons = {
 
 export default function HabitCard({ title, icon, records }: HabitCardProps) {
   return (
-    <li className="w-full">
+    <li className="w-full h-[96px]">
       <Link
         href={`/habbit?title=${title}`}
-        className="flex w-full relative justify-center gap-4 px-3 rounded-lg border bg-background py-3"
+        className="flex h-full w-full relative justify-center gap-4 px-3 rounded-lg border bg-background py-3"
       >
         <span className="border bg-muted p-2 rounded-2xl w-10 h-fit">
           {habitIcons[icon]}

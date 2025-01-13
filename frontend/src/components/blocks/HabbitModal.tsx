@@ -17,9 +17,12 @@ const HabbitModal = () => {
   const [open, setOpen] = useState(true);
   const title = useSearchParams().get("title");
 
-  const { data: habbit } = useGetHabbit({
-    title: decodeURIComponent(`${title}`),
-  });
+  const { data: habbit } = useGetHabbit(
+    {
+      title: decodeURIComponent(`${title}`),
+    },
+    { enabled: Boolean(title) },
+  );
 
   const handleChangeOpen = (isOpen: boolean) => {
     if (!isOpen) {

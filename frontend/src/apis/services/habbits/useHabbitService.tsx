@@ -43,12 +43,14 @@ export function useCreateHabbit(
     ...queryOptions.create(),
     ...options,
     async onSuccess(data, vars, context) {
-      await queryClient.invalidateQueries({ queryKey: ["getAllHabbits"] });
+      await queryClient.invalidateQueries({ queryKey: ["habbits"] });
       await customRevalidateTag("habbits");
 
       if (options?.onSuccess) {
         options.onSuccess(data, vars, context);
       }
+
+      console.log(data);
 
       toast({
         title: `습관이 생성되었습니다 🎉`,
@@ -118,7 +120,7 @@ export function useDeleteHabbit(
     ...queryOptions.delete(),
     ...options,
     onSuccess: async (data, vars, context) => {
-      await queryClient.invalidateQueries({ queryKey: ["getAllHabbits"] });
+      await queryClient.invalidateQueries({ queryKey: ["habbits"] });
       await customRevalidateTag("habbits");
 
       if (options?.onSuccess) {
@@ -126,7 +128,7 @@ export function useDeleteHabbit(
       }
 
       toast({
-        title: `습관이 삭제되었습니다`,
+        title: `삭제되었습니다`,
       });
     },
   });
@@ -135,11 +137,15 @@ export function useDeleteHabbit(
 export function useInfiniteGetAllHabbits({
   initialPageParam,
   params,
+  enabled,
 }: UseInfiniteOptions<GetHabbitResponse[], GetHabbitAllRequest>) {
-  return useSuspenseInfiniteQuery({
+  const data = useSuspenseInfiniteQuery({
     ...queryOptions.findAll(params),
     initialPageParam: initialPageParam ?? { page: 1 },
   });
+
+  if (!enabled) return null;
+  return data;
 }
 
 export function useRecordHabbit(

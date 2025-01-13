@@ -42,9 +42,7 @@ class HabbitService extends BaseService {
       body: params,
     });
 
-    const data = CreateHabbitResponseSchema.parse(result.data);
-
-    return { ...result, data: data };
+    return result;
   }
 
   async update({ habbitId, ...params }: UpdateHabbitRequest) {
@@ -55,9 +53,7 @@ class HabbitService extends BaseService {
       body: params,
     });
 
-    const data = UpdateHabbitResponseSchema.parse(result.data);
-
-    return { ...result, data: data };
+    return result;
   }
 
   async find(params: GetHabbitRequest) {
@@ -70,7 +66,7 @@ class HabbitService extends BaseService {
       },
     );
 
-    return { ...result, data: result.data };
+    return result;
   }
 
   async findAll({ page, ...params }: GetHabbitAllRequest) {
@@ -82,7 +78,7 @@ class HabbitService extends BaseService {
       },
     );
 
-    return { ...result };
+    return result;
   }
 
   async delete(habbitId: number) {
@@ -92,7 +88,7 @@ class HabbitService extends BaseService {
       method: "DELETE",
     });
 
-    return { ...result };
+    return result;
   }
 }
 
