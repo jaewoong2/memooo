@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-import { useUserGetMe } from '@/apis/services/user/useUserService';
+import { useUserGetMe } from "@/apis/services/user/useUserService";
 
-import LoginModal from '../blocks/LoginModal';
+import LoginModal from "../blocks/LoginModal";
 
 function withAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   options?: {
     isCreator?: boolean;
-  }
+  },
 ) {
   const Component = (props: P) => {
     const { back, push } = useRouter();
@@ -25,12 +25,16 @@ function withAuth<P extends object>(
       }
     };
 
+    useEffect(() => {
+      if (user?.data?.id) {
+        setIsDialogOpen(false);
+      }
+    }, [user]);
+
     return isDialogOpen ? (
       <LoginModal
-        title={options?.isCreator ? '로그인' : '이벤트 참여하기'}
-        description={
-          options?.isCreator ? '서비스 이용을 위해 로그인해 주세요' : '즐거운 이벤트 참여를 위해 등록해 주세요'
-        }
+        title={"로그인"}
+        description={"습관을 만들러 가봐요"}
         isApply={options?.isCreator}
         isOpen={isDialogOpen}
         onOpenChange={onOpenChange}

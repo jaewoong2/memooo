@@ -1,11 +1,8 @@
-import HabbitModal from '@/components/blocks/HabbitModal'
-import React from 'react'
-
+import HabbitModal from "@/components/blocks/HabbitModal";
+import React from "react";
 
 const HabbitPage = () => {
-  return (
-    <HabbitModal />
-  )
-}
+  return <HabbitModal />;
+};
 
-export default HabbitPage
+export default HabbitPage;
