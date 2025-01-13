@@ -1,5 +1,5 @@
 // src/auth/auth.service.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { AuthProvider, User } from 'src/users/entities/user.entity';
@@ -11,15 +11,43 @@ import {
   LoginResponse,
   JwtPayload as JwtPayloadType,
 } from './types';
+import axios from 'axios';
+import { authConfig } from 'src/core/config/auth.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(authConfig.KEY)
+    private readonly configService: ConfigType<typeof authConfig>,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  async refreshAccessToken({ id: userId }: Pick<User, 'id'>) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    const url = 'https://oauth2.googleapis.com/token';
+    const params = new URLSearchParams({
+      client_id: this.configService.auth.google.client_id,
+      client_secret: this.configService.auth.google.client_secret,
+      refresh_token: user.refresh_token,
+      grant_type: 'refresh_token',
+    });
+
+    const response = await axios.post(url, params);
+
+    if (response.status === 200) {
+      user.access_token = response.data.access_token;
+      this.userRepository.save(user);
+    }
+
+    return user; // 새로운 AccessToken 반환
+  }
 
   async findByEmailOrSave(
     targetUser: Partial<User> & { email: string },

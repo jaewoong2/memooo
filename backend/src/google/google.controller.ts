@@ -41,6 +41,7 @@ export class GoogleController {
     try {
       const event = await this.googleService.createEvent({
         accessToken: user.access_token,
+        refreshToken: user.refresh_token,
         description,
         summary,
         startTime,

@@ -37,5 +37,12 @@ import { KakaoStrategy } from './strategy/kakao.strategy';
     GoogleStrategy,
     KakaoStrategy,
   ],
+  exports: [
+    JwtStrategy,
+    PassportModule,
+    AuthService,
+    GoogleStrategy,
+    KakaoStrategy,
+  ],
 })
 export class AuthModule {}

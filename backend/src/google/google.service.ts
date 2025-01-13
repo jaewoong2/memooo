@@ -4,18 +4,21 @@ import { calendar_v3, google } from 'googleapis';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class GoogleService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly authService: AuthService,
   ) {}
 
   private readonly calendar = google.calendar('v3');
   private readonly auth = new google.auth.OAuth2();
 
   async createEvent({
+    userId,
     accessToken,
     description,
     endTime,
@@ -28,10 +31,10 @@ export class GoogleService {
         access_token: accessToken,
       });
 
-      // 필요하면 만료 여부 체크 후 토큰 갱신 로직 추가
-      // await oauth2Client.getAccessToken();
+      // Google Calendar API 클라이언트 생성
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
+      // 이벤트 데이터 준비
       const event: calendar_v3.Schema$Event = {
         summary,
         description,
@@ -45,12 +48,40 @@ export class GoogleService {
         },
       };
 
-      const response = await calendar.events.insert({
-        calendarId: 'primary',
-        requestBody: event,
-      });
+      try {
+        // 이벤트 삽입 시도
+        const response = await calendar.events.insert({
+          calendarId: 'primary',
+          requestBody: event,
+        });
+        return response.data;
+      } catch (error) {
+        console.error(error.response.data.error_description);
+        // 401 에러 처리
+        if (error.response?.status === 401) {
+          console.error(
+            'Access token is invalid or expired. Refreshing token...',
+          );
 
-      return response.data;
+          const user = await this.authService.refreshAccessToken({
+            id: userId,
+          });
+
+          oauth2Client.setCredentials({
+            access_token: user.access_token,
+          });
+
+          // 다시 삽입 시도
+          const response = await calendar.events.insert({
+            calendarId: 'primary',
+            requestBody: event,
+          });
+
+          return response.data;
+        } else {
+          throw error; // 401 외의 에러는 그대로 throw
+        }
+      }
     } catch (error) {
       throw new BadRequestException(error.message);
     }

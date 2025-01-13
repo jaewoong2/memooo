@@ -3,26 +3,35 @@
 // summary: string,
 // startTime: string,
 
-import { Exclude, Expose } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateEventDto {
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  readonly userId?: number;
+  @Type(() => String)
   @IsString()
   @IsOptional()
   readonly accessToken: string;
-
+  @Type(() => String)
+  @IsString()
+  @IsOptional()
+  readonly refreshToken: string;
+  @Type(() => String)
   @IsString()
   @IsOptional()
   readonly summary: string;
-
+  @Type(() => String)
   @IsString()
   @IsOptional()
   readonly description: string;
-
+  @Type(() => String)
   @IsString()
   @IsOptional()
   readonly startTime: string;
-
+  @Type(() => String)
   @IsString()
   @IsOptional()
   readonly endTime: string;

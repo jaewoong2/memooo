@@ -71,6 +71,12 @@ export class AuthController {
     res.redirect(`${REDIRECT_URL}/login?code=${token.access_token}`);
   }
 
+  @Get('google/refresh')
+  @UseGuards(JwtAuthGuard)
+  async googleRefresh(@Req() request: { user: User }) {
+    return await this.authService.refreshAccessToken(request.user);
+  }
+
   @Post('signup')
   async signUp(
     @Body()

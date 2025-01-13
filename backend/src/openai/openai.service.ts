@@ -3,10 +3,9 @@ import { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import OpenAI from 'openai';
 import { authConfig } from 'src/core/config/auth.config';
-import { OpenAIResponse, Status } from './entities/openairesponse.entity';
+import { OpenAIResponse } from './entities/openairesponse.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { AlereadyExistException } from 'src/core/filters/exception/service.exception';
-import { RecommendDto } from './dto/recommend.dto';
 import { ResponseFormatJSONSchema } from 'openai/resources';
 
 const PROMPT = `
@@ -42,10 +41,11 @@ export class OpenaiService {
     this.openai = new OpenAI({ apiKey: this.config.auth.openAiAPIKey });
   }
 
-  async findContents({ key }: Pick<OpenAIResponse, 'key'>) {
+  async findContents({ key, user }: Pick<OpenAIResponse, 'key' | 'user'>) {
     const result = await this.openAIRepository.findOne({
-      where: { key, status: Status.DONE },
+      where: { key: key, user: { id: user.id } },
     });
+
     return result;
   }
 
@@ -54,8 +54,12 @@ export class OpenaiService {
     contents,
     status,
     key,
-  }: Pick<OpenAIResponse, 'category' | 'key' | 'contents' | 'status'>) {
-    const result = await this.findContents({ key });
+    user,
+  }: Pick<
+    OpenAIResponse,
+    'category' | 'key' | 'contents' | 'status' | 'user'
+  >) {
+    const result = await this.findContents({ key, user });
 
     if (result) {
       throw AlereadyExistException('이미 존재하는 응답 입니다.');
@@ -72,6 +76,8 @@ export class OpenaiService {
           existing.category = category;
           existing.contents = contents;
           existing.status = status;
+          existing.user = user;
+          existing.user.id = user.id;
           return await manager.save(existing);
         } else {
           // 새로 저장
@@ -80,6 +86,7 @@ export class OpenaiService {
             contents,
             key,
             status,
+            user: { id: user.id },
           });
           return await manager.save(newContent);
         }
@@ -127,22 +134,5 @@ export class OpenaiService {
     };
 
     return { getTranslate };
-  }
-
-  async sendMessage(recommendDto: RecommendDto) {
-    // SQS에 메시지 전송
-    try {
-      await this.saveContents({
-        key: `${recommendDto.key}&page=${recommendDto.page}&lanugae=${recommendDto.language}`,
-        category: recommendDto.category,
-        status: recommendDto.status,
-        contents: '',
-      });
-    } catch (error) {
-      this.logger.error('Failed to send message to SQS', error);
-      throw error;
-    }
-
-    return { key: recommendDto.key };
   }
 }

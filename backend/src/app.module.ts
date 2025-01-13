@@ -15,6 +15,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { ImagesModule } from './images/images.module';
 import { GoogleModule } from './google/google.module';
 import { OpenaiModule } from './openai/openai.module';
+import { HabbitsModule } from './habbits/habbits.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { OpenaiModule } from './openai/openai.module';
     ImagesModule,
     GoogleModule,
     OpenaiModule,
+    HabbitsModule,
   ],
   controllers: [AppController],
   providers: [

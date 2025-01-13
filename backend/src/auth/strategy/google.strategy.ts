@@ -14,7 +14,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: configService.auth.google.client_secret,
       callbackURL: '/api/auth/oauth2/redirect/google', // 이 부분은 구글 콘솔에서 설정한대로. 승인된 리디렉션 URI
       scope: ['email', 'profile', 'https://www.googleapis.com/auth/calendar'],
+      access_type: 'offline',
+      prompt: 'select_account',
     });
+  }
+
+  authorizationParams(): { [key: string]: string } {
+    return {
+      access_type: 'offline',
+      prompt: 'select_account',
+    };
   }
 
   async validate(
@@ -35,7 +44,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         refreshToken,
       };
       console.log('🚀 🔶 GoogleStrategy 🔶 validate 🔶 user:', user);
-      done(null, user);
+
+      return user;
     } catch (error) {
       done(error);
     }

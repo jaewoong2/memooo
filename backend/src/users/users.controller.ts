@@ -33,7 +33,7 @@ export class UsersController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   findMe(@Req() { user }: { user: User }) {
-    return this.usersService.findById(user.id);
+    return this.usersService.findById(user.id, true);
   }
 
   @Get('/:userName')

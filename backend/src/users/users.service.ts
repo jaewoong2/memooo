@@ -5,6 +5,8 @@ import { EntityManager, Repository } from 'typeorm';
 import { AuthProvider, User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { generateRandomNickname } from 'src/core/utils/create-nickname';
+import { plainToInstance } from 'class-transformer';
+import { CreateEventResponseDto } from './dto/find-user.dto';
 
 type ExclusiveUserLookup =
   | { id: number; email?: never }
@@ -17,12 +19,16 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findById(userId: number) {
+  async findById(userId: number, usePlainToInstance: boolean = false) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
 
-    return user;
+    if (!usePlainToInstance) {
+      return user;
+    }
+
+    return plainToInstance(CreateEventResponseDto, user, {});
   }
 
   async createNickname() {
