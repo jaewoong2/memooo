@@ -10,9 +10,11 @@ import { GoogleStrategy } from './strategy/google.strategy';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { KakaoStrategy } from './strategy/kakao.strategy';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     PassportModule.register({ session: true }),

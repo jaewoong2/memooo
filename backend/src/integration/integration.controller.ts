@@ -8,16 +8,16 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/auth.guard';
 import { User } from 'src/users/entities/user.entity';
-import { GoogleService } from './google.service';
+import { IntegrationService } from './integration.service';
 import { UsersService } from 'src/users/users.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateEventDto, CreateEventResponseDto } from './dto/create-event.dto';
 import { AuthroizationException } from 'src/core/filters/exception/service.exception';
 
-@Controller('api/google')
-export class GoogleController {
+@Controller('api/integration')
+export class IntegrationController {
   constructor(
-    private readonly googleService: GoogleService,
+    private readonly integrationService: IntegrationService,
     private readonly userService: UsersService,
   ) {}
 
@@ -39,7 +39,7 @@ export class GoogleController {
 
     // Calendar API 호출
     try {
-      const event = await this.googleService.createEvent({
+      const event = await this.integrationService.createEvent({
         accessToken: user.access_token,
         refreshToken: user.refresh_token,
         description,

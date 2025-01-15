@@ -9,6 +9,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import {
   CreateHabbitDto,
+  FindAllHabbitResponseDto,
   RecordHabbitDto,
   UpdateHabbitDto,
 } from './dto/habbit.dto';
@@ -19,6 +20,7 @@ import { PageMetaDto } from 'src/core/types/page-meta.dto';
 import { PageDto } from 'src/core/types/page.dto';
 import { EntityNotFoundException } from 'src/core/filters/exception/service.exception';
 import { PageOptionsDto } from 'src/core/types/pagination-post.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class HabbitService {
@@ -85,7 +87,7 @@ export class HabbitService {
   async paginate(
     pageOptionsDto: Partial<PageOptionsDto>,
     attach?: <T>(qb: SelectQueryBuilder<T>) => SelectQueryBuilder<T>,
-  ): Promise<PageDto<Habbit>> {
+  ): Promise<PageDto<FindAllHabbitResponseDto>> {
     const qb = this.habbitRepository
       .createQueryBuilder('habbit')
       .leftJoinAndSelect('habbit.records', 'records')
@@ -112,14 +114,14 @@ export class HabbitService {
 
     const last_page = pageMetaDto.last_page;
 
-    // const result = plainToInstance(GetEventResponseDto, events, {});
+    const result = plainToInstance(FindAllHabbitResponseDto, habbits, {});
 
     if (habbits.length === 0) {
-      return new PageDto(habbits, pageMetaDto);
+      return new PageDto(result, pageMetaDto);
     }
 
     if (last_page >= pageMetaDto.page) {
-      return new PageDto(habbits, pageMetaDto);
+      return new PageDto(result, pageMetaDto);
     } else {
       throw EntityNotFoundException('해당 페이지는 존재하지 않습니다');
     }
@@ -230,7 +232,7 @@ export class HabbitService {
       id: habbit.id,
       title: habbit.title,
       icon: habbit.icon,
-      group: habbit.group,
+      group: habbit.group === 'default' ? '기본' : habbit.group,
       records: habbit.records,
       createdAt: habbit.createdAt,
       updatedAt: habbit.updateAt,

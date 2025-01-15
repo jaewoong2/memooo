@@ -7,7 +7,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
-export class GoogleService {
+export class IntegrationService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,

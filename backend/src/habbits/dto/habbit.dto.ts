@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Record } from '../entiteis/record.entity';
 import { Habbit } from '../entiteis/habbit.entity';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 
 export class CreateHabbitDto {
   @IsNotEmpty()
@@ -94,4 +94,22 @@ export class FindAllHabbitQueryDto {
   @Type(() => Number)
   @IsInt()
   take?: number = 10;
+}
+
+export class FindAllHabbitResponseDto {
+  @Expose()
+  id: Habbit['id'];
+  @Expose()
+  title: string;
+  @Expose()
+  icon: Habbit['icon'];
+  @Expose()
+  @Transform(({ value }) => (value === 'default' ? '기본' : value))
+  group: string;
+  @Expose()
+  records: Record[];
+  @Exclude()
+  createdAt: Date;
+  @Exclude()
+  updatedAt: Date;
 }

@@ -3,6 +3,13 @@ import { registerAs } from '@nestjs/config';
 // src/config/auth.config.ts
 export const authConfig = registerAs('auth', () => ({
   auth: {
+    notion: {
+      client_id: process.env.NOTION_TOKEN_CLIENT_ID,
+      client_secret: process.env.NOTION_TOKEN_CLIENT_SECRET_ID,
+      login_redirect_url: process.env.NOTION_REDIRECT_URL,
+      // access_token 취득을 위한 Redirect Url
+      callback_redirect_url: process.env.NOTION_CALLBACK_URL,
+    },
     github: {
       client_id: process.env.GITHUB_CLIENT_ID,
       client_secret: process.env.GITHUB_CLIENT_SECRET_ID,

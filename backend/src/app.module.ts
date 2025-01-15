@@ -13,7 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './core/config/typeorm.config';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { ImagesModule } from './images/images.module';
-import { GoogleModule } from './google/google.module';
+import { IntegrationModule } from './integration/integration.module';
 import { OpenaiModule } from './openai/openai.module';
 import { HabbitsModule } from './habbits/habbits.module';
 
@@ -36,7 +36,7 @@ import { HabbitsModule } from './habbits/habbits.module';
     AuthModule,
     UsersModule,
     ImagesModule,
-    GoogleModule,
+    IntegrationModule,
     OpenaiModule,
     HabbitsModule,
   ],

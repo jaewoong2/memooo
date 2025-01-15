@@ -10,5 +10,6 @@ services:
     environment:
       - NODE_ENV=production
       - PROJECT_NAME=bamtoly
+      - TZ=Asia/Seoul
     ports:
       - "9000:8080"

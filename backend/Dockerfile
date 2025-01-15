@@ -17,6 +17,7 @@ COPY --from=builder /app/dist /var/task/dist
 COPY --from=builder /app/node_modules /var/task/node_modules
 COPY --from=builder /app/.env /var/task/.env
 
+ENV TZ Asia/Seoul
 ENV NODE_ENV production
 # Lambda 핸들러 설정
 CMD ["dist/src/main.handler"]

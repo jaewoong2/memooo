@@ -14,10 +14,16 @@ import {
 import axios from 'axios';
 import { authConfig } from 'src/core/config/auth.config';
 import { ConfigType } from '@nestjs/config';
+import { NotionAuthDto, NotionTokenResponseDto } from './dto/notion-auth.dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import * as https from 'https';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly httpService: HttpService,
     @Inject(authConfig.KEY)
     private readonly configService: ConfigType<typeof authConfig>,
     private readonly usersService: UsersService,
@@ -25,6 +31,49 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  async getNotionAccssToken({ access_token }: NotionAuthDto) {
+    return access_token;
+  }
+
+  async requestNotionAccessToken(code: string) {
+    try {
+      const clientId = this.configService.auth.notion.client_id;
+      const clientSecret = this.configService.auth.notion.client_secret;
+
+      const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString(
+        'base64',
+      );
+
+      const response = await firstValueFrom(
+        this.httpService.post<NotionTokenResponseDto>(
+          'https://api.notion.com/v1/oauth/token',
+          {
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: this.configService.auth.notion.login_redirect_url,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Basic ${encoded}`,
+            },
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+          },
+        ),
+      );
+
+      const responseData = plainToInstance(
+        NotionTokenResponseDto,
+        response.data,
+      );
+
+      return responseData;
+    } catch (err) {
+      console.log(err);
+      return err;
+    }
+  }
 
   async refreshAccessToken({ id: userId }: Pick<User, 'id'>) {
     const user = await this.userRepository.findOne({

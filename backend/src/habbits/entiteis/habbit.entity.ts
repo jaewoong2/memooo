@@ -4,7 +4,6 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
-  Unique,
   Index,
 } from 'typeorm';
 import { Basic } from 'src/core/entities/basic.entitiy';
@@ -39,7 +38,7 @@ export class Habbit extends Basic {
   })
   icon: Icon;
 
-  @Column({ type: 'text', default: '기본' })
+  @Column({ type: 'text', default: 'default' })
   group: string;
 
   @ManyToOne(() => User, (user) => user.habbits, {
