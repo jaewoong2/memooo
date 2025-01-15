@@ -1,8 +1,7 @@
 "use client";
 
-import { PlusIcon, CameraIcon, FolderIcon, Folder } from "lucide-react";
+import { PlusIcon, CameraIcon, FolderIcon } from "lucide-react";
 import React from "react";
-import { Button } from "../ui/button";
 import FileCaptureInput from "../atoms/FileCaptureInput";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

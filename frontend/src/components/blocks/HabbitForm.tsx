@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 import {
   useCreateHabbit,
   useGetHabbit,
-  useInfiniteGetAllHabbits,
   useUpdateHabbit,
 } from "@/apis/services/habbits/useHabbitService";
 import { useRouter } from "next/navigation";
@@ -72,6 +71,7 @@ const FormSchema = z.object({
     },
   ),
   name: z.string({ required_error: "Habbits Name Is Required" }).min(1),
+  group: z.string({ required_error: "Group Is Required" }).min(1),
 });
 
 type Props = {
@@ -94,19 +94,6 @@ const HabbitForm = ({ title }: Props) => {
   const { mutate: updateHabbit } = useUpdateHabbit();
   const { mutate: createHabbit } = useCreateHabbit();
   const router = useRouter();
-
-  const habbits = useInfiniteGetAllHabbits({
-    params: { page: 1 },
-    enabled: isStringValid(title),
-  });
-  const [isInput, setIsInput] = useState(() => {
-    if (isStringValid(title)) return false;
-    return true;
-  });
-
-  const habitList = useMemo(() => {
-    return habbits?.data.pages.flatMap(({ data }) => data.data);
-  }, [habbits?.data.pages]);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -140,16 +127,6 @@ const HabbitForm = ({ title }: Props) => {
 
   const onChangeValue =
     (field: ControllerRenderProps<any>) => (value: string | null) => {
-      if (field.name === "name" && value === "추가") {
-        setIsInput(true);
-        return;
-      }
-
-      if (field.name === "name" && value === null) {
-        setIsInput(false);
-        return;
-      }
-
       field.onChange(value);
     };
 
@@ -172,6 +149,47 @@ const HabbitForm = ({ title }: Props) => {
                   "after:w-16 after:h-1 after:bg-muted-foreground after:absolute after:-bottom-1 after:left-0",
                 )}
               >
+                Group
+              </h4>
+              <div className="w-full">
+                <FormField
+                  control={form.control}
+                  name="group"
+                  render={({ field }) => (
+                    <>
+                      <label className="relative max-w-80 flex">
+                        <Input
+                          autoFocus
+                          placeholder="그룹을 작성해주세요"
+                          className={cn(
+                            "focus:border-0 focus:outline-none focus-visible:ring-0",
+                            "shadow-none max-w-80 w-full text-lg md:text-lg p-0 focus:ring-0 border-0 rounded-none border-muted-foreground",
+                          )}
+                          value={field.value}
+                          onChange={(e) => onChangeValue(field)(e.target.value)}
+                        />
+                        <Button
+                          onClick={() => onChangeValue(field)("")}
+                          className="right-0 top-0 absolute hover:bg-transparent"
+                          variant="ghost"
+                          type="button"
+                        >
+                          <XCircleIcon />
+                        </Button>
+                      </label>
+                    </>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col items-start justify-start">
+              <h4
+                className={cn(
+                  "text-lg font-bold relative w-fit mb-4 col-span-3",
+                  "after:w-16 after:h-1 after:bg-muted-foreground after:absolute after:-bottom-1 after:left-0",
+                )}
+              >
                 Habbit
               </h4>
               <div className="w-full">
@@ -180,55 +198,26 @@ const HabbitForm = ({ title }: Props) => {
                   name="name"
                   render={({ field }) => (
                     <>
-                      {isInput && (
-                        <label className="relative max-w-80 flex">
-                          <Input
-                            autoFocus
-                            placeholder="습관 이름을 입력하세요 "
-                            className={cn(
-                              "focus:border-0 focus:outline-none focus-visible:ring-0",
-                              "shadow-none max-w-80 w-full text-lg md:text-lg p-0 focus:ring-0 border-0 rounded-none border-muted-foreground",
-                            )}
-                            value={field.value}
-                            onChange={(e) =>
-                              onChangeValue(field)(e.target.value)
-                            }
-                          />
-                          <Button
-                            onClick={() => onChangeValue(field)(null)}
-                            className="right-0 top-0 absolute hover:bg-transparent"
-                            variant="ghost"
-                            type="button"
-                          >
-                            <XCircleIcon />
-                          </Button>
-                        </label>
-                      )}
-
-                      {!isInput && (
-                        <Select
+                      <label className="relative max-w-80 flex">
+                        <Input
+                          autoFocus
+                          placeholder="습관 이름을 입력하세요 "
+                          className={cn(
+                            "focus:border-0 focus:outline-none focus-visible:ring-0",
+                            "shadow-none max-w-80 w-full text-lg md:text-lg p-0 focus:ring-0 border-0 rounded-none border-muted-foreground",
+                          )}
                           value={field.value}
-                          onValueChange={onChangeValue(field)}
+                          onChange={(e) => onChangeValue(field)(e.target.value)}
+                        />
+                        <Button
+                          onClick={() => onChangeValue(field)("")}
+                          className="right-0 top-0 absolute hover:bg-transparent"
+                          variant="ghost"
+                          type="button"
                         >
-                          <SelectTrigger className="max-w-80 shadow-none text-lg p-0 focus:ring-0 border-0 rounded-none border-muted-foreground">
-                            <SelectValue placeholder="내 습관" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {habitList?.map(
-                              (data) =>
-                                data && (
-                                  <SelectItem
-                                    key={data.title}
-                                    value={data.title}
-                                  >
-                                    {data.title}
-                                  </SelectItem>
-                                ),
-                            )}
-                            <SelectItem value="추가">추가</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
+                          <XCircleIcon />
+                        </Button>
+                      </label>
                     </>
                   )}
                 />
@@ -285,10 +274,18 @@ const HabbitForm = ({ title }: Props) => {
               )}
             />
           </div>
-          <div className="grid grid-cols-12 max-md:grid-cols-1 gap-2">
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-2",
+              habbit?.data?.id && "grid-cols-12 max-md:grid-cols-1",
+            )}
+          >
             <Button
               type="submit"
-              className="w-full col-span-9 max-md:col-span-1"
+              className={cn(
+                "w-full col-span-1",
+                habbit?.data?.id && "col-span-9 max-md:col-span-1",
+              )}
             >
               {habbit?.data?.id ? "수정하기" : "습관 만들기"}
             </Button>

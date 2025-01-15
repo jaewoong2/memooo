@@ -25,6 +25,7 @@ export type Record = {
 };
 
 export type User = {
+  id: number;
   avatar: string;
   email: string;
   userName: string;
