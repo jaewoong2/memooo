@@ -4,11 +4,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
-import { RiKakaoTalkFill } from "react-icons/ri";
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -17,11 +15,22 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "../ui/button";
+import { NotionLogoIcon } from "@radix-ui/react-icons";
 
 const backendurl =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3001"
     : "https://api.bamtoly.com";
+
+const LOGIN_LINS = [
+  // { url: "", content: "구글 로그인 하기", className: "" },
+  {
+    prefixIcon: <NotionLogoIcon />,
+    url: `${backendurl}/api/auth/notion/login`,
+    content: "노션 로그인 하기",
+    className: "",
+  },
+];
 
 type Props = {
   isOpen?: boolean;
@@ -67,28 +76,34 @@ const LoginModal = ({
             isApply && "min-h-36",
           )}
         >
-          <div
-            className={cn(
-              "flex flex-col items-center justify-center gap-4",
-              isApply && "my-4",
-            )}
-          >
-            <Link
-              href={`${backendurl}/api/auth/google/login`}
-              target="_blank"
-              rel="noreferrer"
+          {LOGIN_LINS.map((login) => (
+            <div
+              key={login.url}
               className={cn(
-                "flex w-full py-3 items-center justify-center gap-4 rounded-full border bg-muted border-black px-3",
-                buttonVariants({
-                  variant: "secondary",
-                  className: "rounded-xl py-3",
-                }),
+                "flex flex-col items-center justify-center gap-4",
+                isApply && "my-4",
               )}
             >
-              <FcGoogle className="h-6 w-6" />
-              <span className="text-xs">구글 로그인하기</span>
-            </Link>
-          </div>
+              <Link
+                href={login.url}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "flex w-full py-3 items-center justify-center gap-4 rounded-full border bg-muted border-black px-3",
+                  buttonVariants({
+                    variant: "secondary",
+                    className: "rounded-xl py-3",
+                  }),
+                  login.className,
+                )}
+              >
+                {login.prefixIcon && (
+                  <span className="text-xl">{login.prefixIcon}</span>
+                )}
+                <span className="text-xs">{login.content}</span>
+              </Link>
+            </div>
+          ))}
         </div>
         <DialogFooter></DialogFooter>
       </DialogContent>
