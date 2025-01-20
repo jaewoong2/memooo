@@ -10,6 +10,7 @@ export enum AuthProvider {
   GITHUB = 'github',
   KAKAO = 'kakao',
   APPLE = 'apple',
+  NOTION = 'notion',
 }
 
 @Entity()

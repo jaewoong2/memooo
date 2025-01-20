@@ -14,10 +14,14 @@ import { zodResponseFormat } from 'openai/helpers/zod';
 import { JwtAuthGuard } from 'src/auth/guard/auth.guard';
 import { Status } from './entities/openairesponse.entity';
 
+const habitSchema = z.object({
+  name: z.string(),
+  checked: z.boolean(),
+});
+
 const TransformToImageSchema = z.object({
   title: z.string(),
-  description: z.string(),
-  percentage: z.string(),
+  habits: z.array(habitSchema),
   date: z.string(),
 });
 
@@ -45,7 +49,7 @@ export class OpenAIController {
 
     const result = await transformImage(
       imageUrl,
-      '이미지에서 제목, 날짜 (YYYY-MM-DD), 습관 진행 퍼센테이지를 추출하여 JSON 형식으로 반환해주세요 <한국어>',
+      '이미지에서 제목, 날짜 (YYYY-MM-DD), 날짜, 습관을 추출하여 JSON 형식으로 반환해주세요 <한국어>',
       1024,
       {
         response_format: zodResponseFormat(

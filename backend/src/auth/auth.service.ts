@@ -15,15 +15,12 @@ import axios from 'axios';
 import { authConfig } from 'src/core/config/auth.config';
 import { ConfigType } from '@nestjs/config';
 import { NotionAuthDto, NotionTokenResponseDto } from './dto/notion-auth.dto';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import * as https from 'https';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly httpService: HttpService,
     @Inject(authConfig.KEY)
     private readonly configService: ConfigType<typeof authConfig>,
     private readonly usersService: UsersService,
@@ -37,42 +34,54 @@ export class AuthService {
   }
 
   async requestNotionAccessToken(code: string) {
-    try {
-      const clientId = this.configService.auth.notion.client_id;
-      const clientSecret = this.configService.auth.notion.client_secret;
+    const clientId = this.configService.auth.notion.client_id;
+    const clientSecret = this.configService.auth.notion.client_secret;
 
-      const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString(
-        'base64',
-      );
+    const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      'base64',
+    );
 
-      const response = await firstValueFrom(
-        this.httpService.post<NotionTokenResponseDto>(
-          'https://api.notion.com/v1/oauth/token',
-          {
-            grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: this.configService.auth.notion.login_redirect_url,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Basic ${encoded}`,
-            },
-            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-          },
-        ),
-      );
+    const response = await axios.post<NotionTokenResponseDto>(
+      'https://api.notion.com/v1/oauth/token',
+      {
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: this.configService.auth.notion.login_redirect_url,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${encoded}`,
+        },
+        httpsAgent:
+          process.env.NODE_ENV === 'local'
+            ? new https.Agent({ rejectUnauthorized: false })
+            : null,
+      },
+    );
 
-      const responseData = plainToInstance(
-        NotionTokenResponseDto,
-        response.data,
-      );
+    const responseData = plainToInstance(NotionTokenResponseDto, response.data);
 
-      return responseData;
-    } catch (err) {
-      console.log(err);
-      return err;
-    }
+    const user = await this.findByEmailOrSave({
+      email: responseData.owner.user.person.email,
+      userName: responseData.owner.user.name,
+      access_token: responseData.access_token,
+      avatar: responseData.owner.user.avatar_url,
+      provider: AuthProvider.NOTION,
+    });
+
+    const payload: JwtPayloadType = {
+      id: user.id,
+      email: user.email,
+      userName: user.userName,
+      provider: user.provider,
+    };
+
+    return {
+      id: user.id,
+      userName: user.userName,
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
   async refreshAccessToken({ id: userId }: Pick<User, 'id'>) {

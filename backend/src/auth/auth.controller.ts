@@ -4,6 +4,7 @@ import {
   Get,
   Post,
   Query,
+  Redirect,
   Req,
   Res,
   UnauthorizedException,
@@ -28,17 +29,21 @@ const REDIRECT_URL =
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('notion/callback')
-  async notionLogin(@Req() req) {
-    console.log(req);
-    return JSON.stringify(req);
+  @Get('notion/login')
+  @Redirect(process.env.NOTION_AUTH_URL)
+  async notionLogin(@Res() response: Response) {
+    console.log(process.env);
+    response.redirect(process.env.NOTION_AUTH_URL);
   }
 
   @Get('notion/redirect')
-  async notionRedirect(@Query('code') code: string) {
+  async notionRedirect(@Query('code') code: string, @Res() response: Response) {
     const result = await this.authService.requestNotionAccessToken(code);
 
-    return result;
+    response.cookie('refresponseh_token', result.access_token, {
+      httpOnly: true,
+    });
+    response.redirect(`${REDIRECT_URL}/login?code=${result.access_token}`);
   }
 
   @Get('kakao/login')

@@ -1,21 +1,50 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { calendar_v3, google } from 'googleapis';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { AuthService } from 'src/auth/auth.service';
+import { Client as NotionClient } from '@notionhq/client';
+import {
+  AddPageDto,
+  CreateNotionPageResponseDto,
+  NotionDatabaseDto,
+} from './dto/notion-create-page.dto';
+import { plainToInstance } from 'class-transformer';
+import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class IntegrationService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly authService: AuthService,
   ) {}
 
-  private readonly calendar = google.calendar('v3');
-  private readonly auth = new google.auth.OAuth2();
+  async listDatabases(accessToken: string): Promise<any> {
+    try {
+      const notion = new NotionClient({ auth: accessToken });
+      // Use Notion search API to list databases
+      const response = await notion.search({
+        filter: {
+          property: 'object',
+          value: 'database',
+        },
+      });
+
+      const results = plainToInstance(NotionDatabaseDto, response.results);
+
+      return results;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error listing Notion databases: ${err.message}`,
+      );
+    }
+  }
 
   async createEvent({
     userId,
@@ -54,6 +83,7 @@ export class IntegrationService {
           calendarId: 'primary',
           requestBody: event,
         });
+
         return response.data;
       } catch (error) {
         console.error(error.response.data.error_description);
@@ -84,6 +114,229 @@ export class IntegrationService {
       }
     } catch (error) {
       throw new BadRequestException(error.message);
+    }
+  }
+
+  getNotionClient(token?: string) {
+    return new NotionClient({ auth: token });
+  }
+
+  async getDatabaseSchema(notion: NotionClient, databaseId: string) {
+    try {
+      const database = await notion.databases.retrieve({
+        database_id: databaseId,
+      });
+      return database.properties;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error retrieving database schema: ${err.message}`,
+      );
+    }
+  }
+
+  identifyMissingProperties(
+    existingProperties: Record<string, any>,
+    checkboxes: { name: string; checked: boolean }[],
+  ): Record<string, any> {
+    const missingProperties: Record<string, any> = {};
+    if (checkboxes && checkboxes.length > 0) {
+      checkboxes.forEach(({ name }) => {
+        if (!existingProperties[name]) {
+          missingProperties[name] = { type: 'checkbox', checkbox: {} };
+        }
+      });
+    }
+    return missingProperties;
+  }
+
+  async updateDatabaseSchema(
+    notion: NotionClient,
+    databaseId: string,
+    missingProperties: Record<string, any>,
+  ): Promise<void> {
+    if (Object.keys(missingProperties).length > 0) {
+      try {
+        await notion.databases.update({
+          database_id: databaseId,
+          properties: missingProperties,
+        });
+      } catch (err) {
+        throw new InternalServerErrorException(
+          `Error updating database schema: ${err.message}`,
+        );
+      }
+    }
+  }
+
+  preparePageProperties(
+    title: { key?: string; value?: string },
+    checkboxes: { name: string; checked: boolean }[],
+    createdTime?: string,
+  ): Record<string, any> {
+    const properties: CreatePageParameters['properties'] = {
+      [title.key ?? 'Name']: {
+        title: [
+          {
+            type: 'mention',
+            mention: {
+              date: { start: title.value },
+            },
+          },
+        ],
+      },
+    };
+
+    if (checkboxes && checkboxes.length > 0) {
+      checkboxes.forEach(({ name, checked }) => {
+        properties[name] = { checkbox: checked };
+      });
+    }
+
+    if (createdTime) {
+      properties['Created time'] = {
+        date: { start: createdTime },
+      };
+    }
+
+    return properties;
+  }
+
+  prepareContentBlocks(
+    checkboxes: { name: string; checked: boolean }[],
+  ): any[] {
+    if (checkboxes && checkboxes.length > 0) {
+      return checkboxes.map(({ name, checked }) => ({
+        object: 'block',
+        type: 'to_do',
+        to_do: {
+          rich_text: [
+            {
+              type: 'text',
+              text: { content: name },
+            },
+          ],
+          checked,
+        },
+      }));
+    }
+
+    // Default content if no checkboxes provided
+    return [
+      {
+        object: 'block',
+        type: 'paragraph',
+        paragraph: {
+          rich_text: [
+            {
+              type: 'text',
+              text: {
+                content: 'This is a default paragraph for your Notion page.',
+              },
+            },
+          ],
+        },
+      },
+    ];
+  }
+
+  async createNotionPage(
+    notion: NotionClient,
+    databaseId: string,
+    properties: CreatePageParameters['properties'],
+    children: any[],
+  ) {
+    try {
+      return await notion.pages.create({
+        parent: { database_id: databaseId },
+        properties,
+        children,
+      });
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error creating Notion page: ${err.message}`,
+      );
+    }
+  }
+
+  async addPageWithCheckboxes(dto: AddPageDto) {
+    const { accessToken, databaseId, checkboxes, date, pageTitle: title } = dto;
+    const notion = new NotionClient({ auth: accessToken });
+
+    // Step 1: Generate pageTitle
+    const pageTitle = dayjs(title ?? new Date()).format('YYYY-MM-DD');
+
+    // Step 2: Retrieve database schema
+    const existingProperties = await this.getDatabaseSchema(notion, databaseId);
+
+    // Step 3: Identify missing properties
+    const missingProperties = this.identifyMissingProperties(
+      existingProperties,
+      checkboxes || [],
+    );
+
+    try {
+      // Step 4: Update database schema (add missing properties)
+      await this.updateDatabaseSchema(notion, databaseId, missingProperties);
+
+      const titleObject = Object.entries(existingProperties)
+        .map(([key, value]) => {
+          if (value.type === 'title') return { key: key, value: pageTitle };
+          return null;
+        })
+        .filter((value) => !!value)[0];
+
+      // Step 5: Prepare page properties
+      const properties = this.preparePageProperties(
+        titleObject,
+        checkboxes || [],
+        date,
+      );
+
+      // Step 6: Prepare content blocks
+      const children = this.prepareContentBlocks(checkboxes || []);
+
+      // Step 7: Create the page
+      const response = await this.createNotionPage(
+        notion,
+        databaseId,
+        properties,
+        children,
+      );
+
+      const result = plainToInstance(CreateNotionPageResponseDto, response);
+
+      return result;
+    } catch (err) {
+      if (Object.keys(missingProperties).length > 0) {
+        await this.rollbackSchemaUpdates(notion, databaseId, missingProperties);
+      }
+
+      // Throw the error to indicate the failure
+      throw new InternalServerErrorException(
+        `Error creating Notion page: ${err.message}`,
+      );
+    }
+  }
+
+  private async rollbackSchemaUpdates(
+    notion: any,
+    databaseId: string,
+    addedProperties: Record<string, any>,
+  ): Promise<void> {
+    const rollbackProperties: Record<string, any> = {};
+    Object.keys(addedProperties).forEach((key) => {
+      rollbackProperties[key] = null;
+    });
+
+    try {
+      await notion.databases.update({
+        database_id: databaseId,
+        properties: rollbackProperties,
+      });
+    } catch (err) {
+      console.error(
+        `Failed to rollback database schema updates: ${err.message}`,
+      );
     }
   }
 }

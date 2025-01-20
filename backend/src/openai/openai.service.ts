@@ -5,26 +5,15 @@ import OpenAI from 'openai';
 import { authConfig } from 'src/core/config/auth.config';
 import { OpenAIResponse } from './entities/openairesponse.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { AlereadyExistException } from 'src/core/filters/exception/service.exception';
 import { ResponseFormatJSONSchema } from 'openai/resources';
 
 const PROMPT = `
-<요청> 다음 Message 를 읽고, 해당 메시지가 [어떤 질문에 대한 응답] 인지 알려주세요. 즉, 해당 응답에 어울릴 만한 질문이 무엇인지 답변 하는 것이 요청 입니다.
+<요청> 이미지를 보고, format에 맞게 응답해주세요
 
 <배경> 
-- GPT의 응답만을 저장하였고, 이 답변을 토대로 역으로 질문이 무엇인지 알고 싶음
-- 이 [질문] 값을 저장한 데이터 컬럼의 Title 로 저장할 것임 메시지는 이미 Description 으로 저장되어있음
-- 메시지의 맥락이 분명하지 않다면, 가장 일반적인 상황을 가정하여 질문을 유추할 것
-
-<기본 지식>
-- 카테고리는 총 21개 [개발, 마케팅, 인사이트, 학습, 언어, 기획, 업무, 이론, 디자인, 단순질문, 문제 해결, 창의성, 생산성, 커뮤니케이션, 트렌드, 결정, 미래 전망, 문화, 윤리, 혁신, 자기계발] 임
-
-<응답> - 아래의 형식대로 출력할 것 (중괄호는 Your Answer 임) / 답변은 간단하게
-- [{질문이 해당 하는 카테고리}] {추측한 질문}
-
-<예시>
-- 메시지: "다음 단어를 영어로 번역해 주세요: '안녕하세요'"
-- 응답: [언어] "안녕하세요"를 영어로 어떻게 번역하나요?
+- 이미지를 보고, Notion Page에 체크박스로 된 속성에 체크 할 수 있도록 할 거임
+- habit tracker를 위한, 어플리케이션 임.
+- 이미지 및 기타 맥락이 분명하지 않다면, 가장 일반적인 상황임을 고려할 것
 `;
 
 @Injectable()
@@ -62,7 +51,7 @@ export class OpenaiService {
     const result = await this.findContents({ key, user });
 
     if (result) {
-      throw AlereadyExistException('이미 존재하는 응답 입니다.');
+      return result;
     }
 
     return await this.openAIRepository.manager.transaction(
@@ -105,9 +94,8 @@ export class OpenaiService {
         messages: [
           {
             role: 'system',
-            content: prompt,
+            content: `${PROMPT} \n ${prompt}`,
           },
-
           {
             role: 'user',
             content: [

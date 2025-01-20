@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -13,6 +15,7 @@ import { UsersService } from 'src/users/users.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateEventDto, CreateEventResponseDto } from './dto/create-event.dto';
 import { AuthroizationException } from 'src/core/filters/exception/service.exception';
+import { AddPageDto } from './dto/notion-create-page.dto';
 
 @Controller('api/integration')
 export class IntegrationController {
@@ -20,6 +23,39 @@ export class IntegrationController {
     private readonly integrationService: IntegrationService,
     private readonly userService: UsersService,
   ) {}
+
+  @Get('notion/database/:id')
+  @UseGuards(JwtAuthGuard)
+  async getDatabaseSchema(
+    @Req() request: { user: User },
+    @Param() { id }: { id: string },
+  ) {
+    const user = await this.userService.findById(request.user.id);
+    const notion = this.integrationService.getNotionClient(user.access_token);
+
+    return this.integrationService.getDatabaseSchema(notion, id);
+  }
+
+  @Get('notion/databases')
+  @UseGuards(JwtAuthGuard)
+  async listDatabases(@Req() request: { user: User }) {
+    const user = await this.userService.findById(request.user.id);
+    return this.integrationService.listDatabases(user.access_token);
+  }
+
+  @Post('notion/page')
+  @UseGuards(JwtAuthGuard)
+  async addPage(
+    @Req() request: { user: User },
+    @Body() addPageDto: Omit<AddPageDto, 'accessToken'>,
+  ) {
+    const user = await this.userService.findById(request.user.id);
+
+    return this.integrationService.addPageWithCheckboxes({
+      accessToken: user.access_token,
+      ...addPageDto,
+    });
+  }
 
   @Post('calendar/add-event')
   @UseGuards(JwtAuthGuard)
