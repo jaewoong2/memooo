@@ -145,17 +145,23 @@ const TaskForm = ({ imageUrl }: Props) => {
             </div>
           ) : (
             <ActionToolbar>
-              <ActionToolbar.CameraButton
-                className={buttonVariants({
-                  variant: "outline",
-                  className: cn(
-                    "w-full px-6 h-[120px] border justify-center shadow-none rounded-lg text-foreground",
-                    "flex-col gap-0",
-                  ),
-                })}
-              >
-                <span className="text-sm">사진을 등록해주세요</span>
-              </ActionToolbar.CameraButton>
+              {({ isLoading }) => (
+                <ActionToolbar.CameraButton
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: cn(
+                      "w-full px-6 h-[120px] border justify-center shadow-none rounded-lg text-foreground",
+                      "flex-col gap-0",
+                    ),
+                  })}
+                >
+                  {isLoading ? (
+                    <span className="text-sm">로딩중...</span>
+                  ) : (
+                    <span className="text-sm">사진을 등록해주세요</span>
+                  )}
+                </ActionToolbar.CameraButton>
+              )}
             </ActionToolbar>
           )}
         </div>

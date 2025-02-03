@@ -31,8 +31,14 @@ const ActionToolbarContext = createContext<
   ActionToolbarContextProps | undefined
 >(undefined);
 
+type Props = {
+  children:
+    | React.ReactNode
+    | (({ isLoading }: { isLoading?: boolean }) => React.ReactNode);
+};
+
 // 부모 컴포넌트
-const ActionToolbar = ({ children }: PropsWithChildren) => {
+const ActionToolbar = ({ children }: Props) => {
   const { data: user } = useUserGetMe();
   const uploadImage = useUploadImageMutation();
   const imageToText = useOpenAiImageToText();
@@ -75,7 +81,8 @@ const ActionToolbar = ({ children }: PropsWithChildren) => {
         handleFileChange,
       }}
     >
-      {children}
+      {typeof children === "function" && children({ isLoading: !isLoading })}
+      {typeof children !== "function" && children}
     </ActionToolbarContext.Provider>
   );
 };
@@ -150,7 +157,7 @@ const CameraButton = ({
   if (!context)
     throw new Error("CameraButton must be used within an ActionToolbar");
 
-  const { user, handleFileChange } = context;
+  const { user, handleFileChange, isLoading } = context;
 
   return !user?.id ? (
     <Button
