@@ -32,7 +32,6 @@ export class AuthController {
   @Get('notion/login')
   @Redirect(process.env.NOTION_AUTH_URL)
   async notionLogin(@Res() response: Response) {
-    console.log(process.env);
     response.redirect(process.env.NOTION_AUTH_URL);
   }
 
