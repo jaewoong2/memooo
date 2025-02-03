@@ -262,20 +262,16 @@ export class IntegrationService {
     const { accessToken, databaseId, checkboxes, date, pageTitle: title } = dto;
     const notion = new NotionClient({ auth: accessToken });
 
-    // Step 1: Generate pageTitle
     const pageTitle = dayjs(title ?? new Date()).format('YYYY-MM-DD');
 
-    // Step 2: Retrieve database schema
     const existingProperties = await this.getDatabaseSchema(notion, databaseId);
 
-    // Step 3: Identify missing properties
     const missingProperties = this.identifyMissingProperties(
       existingProperties,
       checkboxes || [],
     );
 
     try {
-      // Step 4: Update database schema (add missing properties)
       await this.updateDatabaseSchema(notion, databaseId, missingProperties);
 
       const titleObject = Object.entries(existingProperties)

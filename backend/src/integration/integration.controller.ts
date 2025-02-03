@@ -15,7 +15,10 @@ import { UsersService } from 'src/users/users.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateEventDto, CreateEventResponseDto } from './dto/create-event.dto';
 import { AuthroizationException } from 'src/core/filters/exception/service.exception';
-import { AddPageDto } from './dto/notion-create-page.dto';
+import {
+  AddPageDto,
+  GetNotionDatabaseResponseDto,
+} from './dto/notion-create-page.dto';
 
 @Controller('api/integration')
 export class IntegrationController {
@@ -33,7 +36,12 @@ export class IntegrationController {
     const user = await this.userService.findById(request.user.id);
     const notion = this.integrationService.getNotionClient(user.access_token);
 
-    return this.integrationService.getDatabaseSchema(notion, id);
+    const properties = await this.integrationService.getDatabaseSchema(
+      notion,
+      id,
+    );
+
+    return plainToInstance(GetNotionDatabaseResponseDto, { properties });
   }
 
   @Get('notion/databases')

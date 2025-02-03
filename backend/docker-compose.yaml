@@ -1,15 +1,16 @@
 version: '3.8'
 services:
-  bamtoly:
+  habbits:
     platform: linux/amd64
-    image: 849441246713.dkr.ecr.ap-northeast-2.amazonaws.com/bamtoly/api_bamtoly
+    image: 849441246713.dkr.ecr.ap-northeast-2.amazonaws.com/habbits/backend
     build:
       dockerfile: Dockerfile
       args:
-        PROJECT_NAME: bamtoly
+        PROJECT_NAME: habbits
     environment:
       - NODE_ENV=production
-      - PROJECT_NAME=bamtoly
+      - PROJECT_NAME=habbits
+      - BUILD_TYPE=normal
       - TZ=Asia/Seoul
     ports:
-      - "9000:8080"
+      - "3001:3001"

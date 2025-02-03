@@ -49,7 +49,7 @@ export class OpenAIController {
 
     const result = await transformImage(
       imageUrl,
-      '이미지에서 제목, 날짜 (YYYY-MM-DD), 날짜, 습관을 추출하여 JSON 형식으로 반환해주세요 <한국어>',
+      '이미지에서 제목, 날짜 (YYYY-MM-DD), 습관들을 추출하여 JSON 형식으로 반환해주세요. 연도가 없으면 현재 년도(2025) 로 생각 해주세요.',
       1024,
       {
         response_format: zodResponseFormat(

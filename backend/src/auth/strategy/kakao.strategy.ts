@@ -1,5 +1,8 @@
+import { Inject } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-kakao';
+import { authConfig } from 'src/core/config/auth.config';
 
 // kakaoNativeAppKey: process.env.KAKAO_NATIVE_APP_KEY,
 // kakaoRestApiKey: process.env.KAKAO_REST_API_KEY,
@@ -7,14 +10,14 @@ import { Profile, Strategy } from 'passport-kakao';
 // kaKaoAdminKey: process.env.KAKAO_ADMIN_KEY,
 // kakaoRedirectUri: process.env.KAKAO_REDIRECT_URI,
 export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
-  constructor() {
-    console.log(process.env.KAKAO_REST_API_KEY);
-    console.log(process.env.KAKAO_SECRET_KEY);
-    console.log(process.env.KAKAO_REDIRECT_URI);
+  constructor(
+    @Inject(authConfig.KEY)
+    private readonly configService: ConfigType<typeof authConfig>,
+  ) {
     super({
-      clientID: process.env.KAKAO_REST_API_KEY,
-      clientSecret: process.env.KAKAO_SECRET_KEY,
-      callbackURL: process.env.KAKAO_REDIRECT_URI,
+      clientID: configService.auth.kakao.kakaoRestApiKey,
+      clientSecret: configService.auth.kakao.kakaoSecretKey,
+      callbackURL: configService.auth.kakao.kakaoRedirectUri,
       scope: ['profile_image', 'profile_nickname'],
     });
   }

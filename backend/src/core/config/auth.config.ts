@@ -26,6 +26,7 @@ export const authConfig = registerAs('auth', () => ({
       kakakoJavascriptKey: process.env.KAKAO_JAVASCRIPT_KEY,
       kaKaoAdminKey: process.env.KAKAO_ADMIN_KEY,
       kakaoRedirectUri: process.env.KAKAO_REDIRECT_URI,
+      kakaoSecretKey: process.env.KAKAO_SECRET_KEY,
     },
     slack: {
       botUserOauthToken: process.env.SLACK_BOT_USER_OAUTH_TOKEN,
