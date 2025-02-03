@@ -6,20 +6,22 @@ export interface ApiRequestConfig extends RequestInit {
 }
 
 export const API_BASE_URL =
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 'https://api.bamtoly.com'; //  여기에 실제 API 기본 URL을 넣으세요
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3001"
+    : "http://backend"; //  여기에 실제 API 기본 URL을 넣으세요
 
 export const http = async <T>(
   endpoint: string,
-  { method = 'GET', headers = {}, stringfy = true, body }: ApiRequestConfig
+  { method = "GET", headers = {}, stringfy = true, body }: ApiRequestConfig,
 ): Promise<T> => {
-  const { cookies } = await import('next/headers');
-  const token = (await cookies()).get('access_token')?.value;
+  const { cookies } = await import("next/headers");
+  const token = (await cookies()).get("access_token")?.value;
 
   const config: RequestInit = {
     method,
     headers: stringfy
       ? {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...headers,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }
@@ -42,7 +44,7 @@ export const http = async <T>(
 
     return data;
   } catch (error) {
-    console.error('API Server Error:', error);
+    console.error("API Server Error:", error);
     throw error;
   }
 };

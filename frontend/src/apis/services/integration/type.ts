@@ -11,17 +11,19 @@ export interface CreatePageResponse {
 }
 
 export type GetDatabaseResponses = {
+  id: string;
   title: string;
   url: string;
 }[];
 
 export interface GetDatabaseResponse {
-  [key: string]: {
+  properties: {
     id: string;
     name: string;
     type: string;
-    description?: string;
-  };
+    checked?: boolean;
+    [key: string]: unknown;
+  }[];
 }
 
 export interface CreateEventRequest {

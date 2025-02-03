@@ -23,8 +23,8 @@ class IntegrationService extends BaseService {
     );
   }
 
-  async getDatabases() {
-    return await this.http<GetDatabaseResponses>(
+  getDatabases() {
+    return this.http<DefaultResponse<GetDatabaseResponses | null>>(
       `/api/integration/notion/databases`,
       {
         method: "GET",
@@ -32,8 +32,8 @@ class IntegrationService extends BaseService {
     );
   }
 
-  async getDatabase(databaseId: string) {
-    return await this.http<GetDatabaseResponse>(
+  getDatabase(databaseId: string) {
+    return this.http<DefaultResponse<GetDatabaseResponse | null>>(
       `/api/integration/notion/database/${databaseId}`,
       {
         method: "GET",
@@ -41,8 +41,8 @@ class IntegrationService extends BaseService {
     );
   }
 
-  async createPage(params: CreatePageRequest) {
-    return await this.http<DefaultResponse<CreatePageResponse>>(
+  createPage(params: CreatePageRequest) {
+    return this.http<DefaultResponse<CreatePageResponse | null>>(
       `/api/integration/notion/page`,
       {
         method: "POST",

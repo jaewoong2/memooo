@@ -5,8 +5,11 @@ export type OpenAiFindResponseRequest = {
 export type OpenAiFindResponseResponse = {
   contents: {
     title: string;
+    habits: {
+      name: string;
+      checked: boolean;
+    }[];
     date: string;
-    persentage: string;
   };
 };
 

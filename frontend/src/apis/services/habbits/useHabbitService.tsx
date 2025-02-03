@@ -50,8 +50,6 @@ export function useCreateHabbit(
         options.onSuccess(data, vars, context);
       }
 
-      console.log(data);
-
       toast({
         title: `습관이 생성되었습니다 🎉`,
       });

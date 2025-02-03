@@ -1,7 +1,5 @@
 "use client";
-import { useGetAiResponse } from "@/apis/services/openai/useOpenAiService";
 import AiResponseForm from "@/components/blocks/AiResponseForm";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,

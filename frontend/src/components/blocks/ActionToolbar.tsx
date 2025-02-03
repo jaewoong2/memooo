@@ -1,0 +1,238 @@
+"use client";
+
+import { PlusIcon, CameraIcon, FolderIcon, LoaderIcon } from "lucide-react";
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  PropsWithChildren,
+} from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useUserGetMe } from "@/apis/services/user/useUserService";
+import { useUploadImageMutation } from "@/apis/services/image/useImageService";
+import { useOpenAiImageToText } from "@/apis/services/openai/useOpenAiService";
+import FileCaptureInput from "@/components/atoms/FileCaptureInput";
+import { User } from "@/apis/type";
+import { cn } from "@/lib/utils";
+import { ButtonProps } from "../ui/button";
+
+// Context 정의
+interface ActionToolbarContextProps {
+  user?: User | null;
+  uploadImage: ReturnType<typeof useUploadImageMutation>;
+  imageToText: ReturnType<typeof useOpenAiImageToText>;
+  router: ReturnType<typeof useRouter>;
+  isLoading: boolean;
+  handleFileChange: (file: File | null) => Promise<void>;
+}
+
+const ActionToolbarContext = createContext<
+  ActionToolbarContextProps | undefined
+>(undefined);
+
+// 부모 컴포넌트
+const ActionToolbar = ({ children }: PropsWithChildren) => {
+  const { data: user } = useUserGetMe();
+  const uploadImage = useUploadImageMutation();
+  const imageToText = useOpenAiImageToText();
+  const router = useRouter();
+
+  const isLoading = uploadImage.isPending || imageToText.isPending;
+
+  const handleFileChange = async (file: File | null) => {
+    if (!file) return;
+
+    try {
+      const { data: image } = await uploadImage.mutateAsync({ file });
+
+      if (!image?.url) {
+        console.error("이미지 업로드 실패");
+        return;
+      }
+
+      const { data } = await imageToText.mutateAsync({ imageUrl: image.url });
+
+      if (!data.content) {
+        console.error("이미지에서 텍스트 변환 실패");
+        return;
+      }
+
+      router.replace(`/n?imageUrl=${encodeURIComponent(image.url)}`);
+    } catch (error) {
+      console.error("파일 처리 중 에러 발생:", error);
+    }
+  };
+
+  return (
+    <ActionToolbarContext.Provider
+      value={{
+        user: user?.data,
+        uploadImage,
+        imageToText,
+        router,
+        isLoading,
+        handleFileChange,
+      }}
+    >
+      {children}
+    </ActionToolbarContext.Provider>
+  );
+};
+
+// 자식 컴포넌트: 버튼의 공통 속성 정의
+interface ToolbarButtonProps {
+  children: ReactNode;
+  className?: string;
+}
+
+const Layout = ({ children }: PropsWithChildren) => {
+  const context = useContext(ActionToolbarContext);
+  if (!context)
+    throw new Error("CameraButton must be used within an ActionToolbar");
+
+  const { isLoading } = context;
+
+  return (
+    <>
+      {isLoading && (
+        <div className="fixed left-0 top-0 w-screen h-screen z-[99999] justify-center items-start flex bg-secondary/20">
+          <LoaderIcon className="w-6 h-6 animate-spin mt-20" />
+        </div>
+      )}
+      <div className="h-[65px] sticky bottom-4 w-full z-10 flex justify-center">
+        <div className="border border-primary bg-primary-foreground grid items-center grid-cols-3 w-[240px] h-[65px] rounded-[50px_50px] shadow-xl shadow-black/60">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// 일반 버튼 컴포넌트
+const Button = ({
+  children,
+  href,
+  className,
+}: ToolbarButtonProps & { href?: string }) => {
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn(
+          `w-full h-full flex justify-center items-center`,
+          className,
+        )}
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      className={cn(
+        `w-full h-full flex justify-center items-center`,
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Camera 버튼 컴포넌트
+const CameraButton = ({
+  className,
+  children,
+}: ToolbarButtonProps | JSX.IntrinsicElements["input"]) => {
+  const context = useContext(ActionToolbarContext);
+  if (!context)
+    throw new Error("CameraButton must be used within an ActionToolbar");
+
+  const { user, handleFileChange } = context;
+
+  return !user?.id ? (
+    <Button
+      href="/auth"
+      className={cn(
+        "mx-auto p-0 cursor-pointer shadow-gray-600 hover:opacity-80 transition-opacity shadow-sm text-background h-[50px] rounded-full flex justify-center items-center bg-primary w-auto aspect-square",
+        className,
+      )}
+    >
+      <CameraIcon />
+      {children}
+    </Button>
+  ) : (
+    <FileCaptureInput
+      type="file"
+      capture="environment"
+      accept="image/*"
+      onFileChange={handleFileChange}
+      className={cn(
+        "mx-auto p-0 cursor-pointer shadow-gray-600 hover:opacity-80 transition-opacity shadow-sm text-background h-[50px] rounded-full flex justify-center items-center bg-primary w-auto aspect-square",
+        className,
+      )}
+    >
+      <CameraIcon />
+      {children}
+    </FileCaptureInput>
+  );
+};
+
+// Folder 버튼 컴포넌트
+const FolderButton = ({
+  className,
+  ...props
+}: ToolbarButtonProps | JSX.IntrinsicElements["input"]) => {
+  const context = useContext(ActionToolbarContext);
+  if (!context)
+    throw new Error("FolderButton must be used within an ActionToolbar");
+
+  const { user, handleFileChange } = context;
+
+  return !user?.id ? (
+    <Button
+      href="/auth"
+      className={cn(
+        "w-full cursor-pointer br h-full flex justify-center items-center",
+        className,
+      )}
+      {...props}
+    >
+      <FolderIcon />
+    </Button>
+  ) : (
+    <FileCaptureInput
+      type="file"
+      capture="environment"
+      accept="image/*"
+      onFileChange={handleFileChange}
+      className={cn(
+        "w-full cursor-pointer br h-full flex justify-center items-center",
+        className,
+      )}
+      {...props}
+    >
+      <FolderIcon />
+    </FileCaptureInput>
+  );
+};
+
+// Plus 버튼 컴포넌트
+const PlusButton = ({ className, ...props }: ButtonProps) => {
+  return (
+    <Button href="/habbit" className={cn("col-span-1", className)} {...props}>
+      <PlusIcon />
+    </Button>
+  );
+};
+
+// Sub-components을 부모 컴포넌트에 할당
+ActionToolbar.Layout = Layout;
+ActionToolbar.Button = Button;
+ActionToolbar.CameraButton = CameraButton;
+ActionToolbar.FolderButton = FolderButton;
+ActionToolbar.PlusButton = PlusButton;
+
+export default ActionToolbar;

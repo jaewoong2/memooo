@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useIsMounted } from 'usehooks-ts';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useIsMounted } from "usehooks-ts";
 
-import { User } from '@/atoms/types';
-import withAuth from '@/components/hoc/withAuth';
-import { useToast } from '@/hooks/use-toast';
+import withAuth from "@/components/hoc/withAuth";
+import { useToast } from "@/hooks/use-toast";
+import { User } from "@/apis/type";
 
 type Props = {
   user: User | null;
@@ -19,7 +19,7 @@ const AuthComponentPage = ({ user }: Props) => {
 
   useEffect(() => {
     if (user && isMount()) {
-      replace('/');
+      replace("/");
     }
   }, [user, toast, isMount, replace]);
 

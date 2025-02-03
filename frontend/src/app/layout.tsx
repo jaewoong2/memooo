@@ -14,6 +14,7 @@ import { siteConfig, siteMetadata } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 import Freesentation from "./fonts";
+import ActionToolbar from "@/components/blocks/ActionToolbar";
 import FloatingButtons from "@/components/blocks/FloatingButtons";
 
 export const metadata: Metadata = {

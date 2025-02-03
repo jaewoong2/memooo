@@ -38,7 +38,6 @@ export function useGetAiResponse(
     "queryFn" | "queryKey"
   >,
 ) {
-  console.log(query);
   return useQuery({
     ...queryOptions.find(query),
     ...options,

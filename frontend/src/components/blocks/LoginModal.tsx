@@ -20,7 +20,7 @@ import { NotionLogoIcon } from "@radix-ui/react-icons";
 const backendurl =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3001"
-    : "https://api.bamtoly.com";
+    : "https://api-habbits.bamtoly.com";
 
 const LOGIN_LINS = [
   // { url: "", content: "구글 로그인 하기", className: "" },

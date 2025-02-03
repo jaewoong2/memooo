@@ -1,5 +1,5 @@
 import Greeting from "@/components/blocks/Greeting";
-import TaskForm from "@/components/blocks/TaskForm";
+import TaskForm from "@/components/blocks/TaskForm2";
 
 export default function Main() {
   return (
@@ -7,11 +7,7 @@ export default function Main() {
       <Greeting />
       <main className="flex flex-col items-center justify-center relative z-10 px-4 py-6">
         <div className="w-full flex flex-col gap-2">
-          <div className="p-4 bg-background rounded-xl px-6 border">
-            오늘 무엇을 하셨나요?
-          </div>
           <TaskForm />
-
           {/* <HabitList /> */}
         </div>
       </main>

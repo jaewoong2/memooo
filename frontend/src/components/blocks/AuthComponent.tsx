@@ -1,12 +1,11 @@
-'use client';
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
-import { useIsMounted } from 'usehooks-ts';
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useIsMounted } from "usehooks-ts";
 
-import { User } from '@/atoms/types';
-
-import withAuth from '../hoc/withAuth';
+import withAuth from "../hoc/withAuth";
+import { User } from "@/apis/type";
 
 type Props = {
   user: User | null;
@@ -15,7 +14,7 @@ type Props = {
 const AuthComponent = ({ user }: Props) => {
   const searchParmas = useSearchParams();
   const navigation = useRouter();
-  const redirectUrl = searchParmas.get('redirectUrl');
+  const redirectUrl = searchParmas.get("redirectUrl");
   const isMounted = useIsMounted();
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateEventRequest } from "./type";
+import { CreateEventRequest, CreatePageRequest } from "./type";
 import integrationService from "./integrationService";
 
 const queryKeys = {
@@ -22,6 +22,11 @@ const queryOptions = {
   getDatabases: () => ({
     queryFn: () => integrationService.getDatabases(),
     queryKey: queryKeys.getDatabases(),
+  }),
+
+  createPage: () => ({
+    mutationFn: (body: CreatePageRequest) =>
+      integrationService.createPage(body),
   }),
 };
 

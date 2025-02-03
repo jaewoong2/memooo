@@ -18,22 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
+import { GetDatabaseResponses } from "@/apis/services/integration/type";
 
 const FormSchema = z.object({
-  database: z.object(
-    {
-      id: z.string(),
-      name: z.string(),
-      url: z.string(),
-    },
-    {
-      required_error: "데이터베이스를 골라주세요.",
-    },
-  ),
+  database: z.string().nullable(),
 });
 
 type Props = {
-  databases: { id: string; name: string; url: string }[];
+  databases?: GetDatabaseResponses;
   header?: {
     label?: string;
     description?: string;
@@ -55,7 +47,7 @@ export function SelectForm({ databases, header }: Props) {
           </div>
           <Select
             onValueChange={field.onChange}
-            defaultValue={field.value.name}
+            defaultValue={field.value ?? ""}
           >
             <FormControl>
               <SelectTrigger className="bg-background rounded-lg py-5 shadow-none">
@@ -63,9 +55,9 @@ export function SelectForm({ databases, header }: Props) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {databases.map(({ id, name, url }) => (
-                <SelectItem key={id} value={id}>
-                  {name}
+              {databases?.map((database) => (
+                <SelectItem key={database.title} value={database.id}>
+                  {database.title}
                 </SelectItem>
               ))}
             </SelectContent>

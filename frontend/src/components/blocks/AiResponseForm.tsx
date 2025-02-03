@@ -92,10 +92,6 @@ const AiResponseForm = ({ imageUrl }: AiResponseFormProps) => {
       if (aiResponse.data?.contents.date) {
         form.setValue("date", new Date(aiResponse.data?.contents.date));
       }
-
-      if (aiResponse.data?.contents.persentage) {
-        form.setValue("percentage", +aiResponse.data?.contents.persentage);
-      }
     }
   }, [aiResponse, habitList, form]);
 
