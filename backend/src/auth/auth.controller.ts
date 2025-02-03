@@ -22,7 +22,7 @@ import { KaKaoRedirectRequestType } from 'src/core/types';
 const REDIRECT_URL =
   process.env.NODE_ENV === 'local'
     ? 'http://localhost:3000'
-    : 'https://bamtoly.com';
+    : 'https://habbits.bamtoly.com';
 
 @ApiTags('api/auth')
 @Controller('api/auth')
