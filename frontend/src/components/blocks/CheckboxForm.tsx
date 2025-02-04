@@ -139,7 +139,7 @@ export function CheckBoxForm({ items, header, onClickDeleteButton }: Props) {
                                   {item.status === ITEM_STATUS.UPDATED && (
                                     <Input
                                       autoFocus
-                                      className="rounded-none text-nowrap h-fit p-0 w-fit border-0 focus-within:border-0 focus-visible:ring-0 shadow-none"
+                                      className="rounded-none text-nowrap h-fit p-0 w-full border-0 focus-within:border-0 focus-visible:ring-0 shadow-none"
                                       value={item.name}
                                       placeholder={items[index].name}
                                       onChange={onChangeItemName(item.id)}
@@ -165,7 +165,7 @@ export function CheckBoxForm({ items, header, onClickDeleteButton }: Props) {
                             id={item.name}
                             onClick={onClickDeleteButton}
                             type="button"
-                            className="w-[72px] h-full text-xl bg-rose-400 whitespace-nowrap flex justify-center items-center hover:bg-rose-400/90 transition-colors"
+                            className="w-[72px] h-full text-xl bg-red-400/90 whitespace-nowrap flex justify-center items-center hover:bg-red-400/80 transition-colors"
                           >
                             &times;
                           </button>

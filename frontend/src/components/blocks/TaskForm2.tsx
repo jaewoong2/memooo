@@ -152,6 +152,7 @@ const TaskForm = ({ imageUrl }: Props) => {
                     className: cn(
                       "w-full px-6 h-[120px] border justify-center shadow-none rounded-lg text-foreground",
                       "flex-col gap-0",
+                      isLoading && "animate-pulse bg-secondary",
                     ),
                   })}
                 >

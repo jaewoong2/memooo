@@ -6,6 +6,7 @@ import React, {
   useContext,
   ReactNode,
   PropsWithChildren,
+  useEffect,
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import FileCaptureInput from "@/components/atoms/FileCaptureInput";
 import { User } from "@/apis/type";
 import { cn } from "@/lib/utils";
 import { ButtonProps } from "../ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 // Context 정의
 interface ActionToolbarContextProps {
@@ -43,6 +45,7 @@ const ActionToolbar = ({ children }: Props) => {
   const uploadImage = useUploadImageMutation();
   const imageToText = useOpenAiImageToText();
   const router = useRouter();
+  const toast = useToast();
 
   const isLoading = uploadImage.isPending || imageToText.isPending;
 
@@ -70,6 +73,21 @@ const ActionToolbar = ({ children }: Props) => {
     }
   };
 
+  useEffect(() => {
+    if (!isLoading) return;
+
+    toast.toast({
+      className: cn(
+        "fixed top-4 left-[50%] z-[100] flex max-h-screen w-full translate-x-[-50%] flex-col-reverse p-4 sm:right-0 sm:flex-col md:max-w-[420px]",
+      ),
+      title: "이미지 업로드 중입니다.",
+      description:
+        "이미지 업로드가 완료되면 자동으로 텍스트 추출을 시작합니다.",
+      duration: Infinity,
+      variant: "default",
+    });
+  }, [isLoading]);
+
   return (
     <ActionToolbarContext.Provider
       value={{
@@ -81,7 +99,7 @@ const ActionToolbar = ({ children }: Props) => {
         handleFileChange,
       }}
     >
-      {typeof children === "function" && children({ isLoading: !isLoading })}
+      {typeof children === "function" && children({ isLoading })}
       {typeof children !== "function" && children}
     </ActionToolbarContext.Provider>
   );
@@ -180,6 +198,8 @@ const CameraButton = ({
         "mx-auto p-0 cursor-pointer shadow-gray-600 hover:opacity-80 transition-opacity shadow-sm text-background h-[50px] rounded-full flex justify-center items-center bg-primary w-auto aspect-square",
         className,
       )}
+      readOnly={isLoading}
+      disabled={isLoading}
     >
       <CameraIcon />
       {children}
