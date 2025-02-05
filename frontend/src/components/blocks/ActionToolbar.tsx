@@ -18,6 +18,7 @@ import { User } from "@/apis/type";
 import { cn } from "@/lib/utils";
 import { ButtonProps } from "../ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { is } from "date-fns/locale";
 
 // Context 정의
 interface ActionToolbarContextProps {
@@ -47,7 +48,8 @@ const ActionToolbar = ({ children }: Props) => {
   const router = useRouter();
   const toast = useToast();
 
-  const isLoading = uploadImage.isPending || imageToText.isPending;
+  const isLoading =
+    uploadImage.status === "pending" || imageToText.status === "pending";
 
   const handleFileChange = async (file: File | null) => {
     if (!file) return;
@@ -74,19 +76,23 @@ const ActionToolbar = ({ children }: Props) => {
   };
 
   useEffect(() => {
-    if (isLoading) return;
+    if (!isLoading) {
+      return;
+    }
 
-    toast.toast({
-      className: cn(
-        "fixed top-4 left-[50%] z-[100] flex w-fit -translate-x-1/2",
-      ),
-      title: "이미지 업로드 중입니다.",
-      description:
-        "이미지 업로드가 완료되면 자동으로 텍스트 추출을 시작합니다.",
-      duration: Infinity,
-      variant: "default",
-    });
-  }, [isLoading]);
+    setTimeout(() => {
+      toast.toast({
+        className: cn(
+          "fixed top-4 left-[50%] z-[100] flex w-fit -translate-x-1/2",
+        ),
+        title: "이미지 업로드 중입니다.",
+        description:
+          "이미지 업로드가 완료되면 자동으로 텍스트 추출을 시작합니다.",
+        duration: Infinity,
+        variant: "default",
+      });
+    }, 0);
+  }, [isLoading, toast]);
 
   return (
     <ActionToolbarContext.Provider
