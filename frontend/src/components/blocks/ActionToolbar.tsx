@@ -74,11 +74,11 @@ const ActionToolbar = ({ children }: Props) => {
   };
 
   useEffect(() => {
-    if (!isLoading) return;
+    if (isLoading) return;
 
     toast.toast({
       className: cn(
-        "fixed top-4 left-[50%] z-[100] flex max-h-screen w-full translate-x-[-50%] flex-col-reverse p-4 sm:right-0 sm:flex-col md:max-w-[420px]",
+        "fixed top-4 left-[50%] z-[100] flex w-fit -translate-x-1/2",
       ),
       title: "이미지 업로드 중입니다.",
       description:

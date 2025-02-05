@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
       { hostname: "d3t7exr31xs1l7.cloudfront.net" },
       { hostname: "images.bamtoly.com" },
       { hostname: "static.bamtoly.com" },
+      { hostname: "static-habbits.bamtoly.com" },
     ],
   },
   reactStrictMode: true,

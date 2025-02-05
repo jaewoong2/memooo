@@ -33,7 +33,7 @@ const Footer = () => {
           </li>
         </ul>
         <div className="flex w-full justify-between border-t border-gray-700 py-2 text-sm">
-          <p>&copy; {new Date().getFullYear()} Bamtoly.com</p>
+          <p>&copy; {new Date().getFullYear()} Habbits.</p>
           <p>All rights reserved.</p>
         </div>
       </div>
