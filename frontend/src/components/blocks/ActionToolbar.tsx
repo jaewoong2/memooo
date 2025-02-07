@@ -7,9 +7,10 @@ import React, {
   ReactNode,
   PropsWithChildren,
   useEffect,
+  useRef,
 } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUserGetMe } from "@/apis/services/user/useUserService";
 import { useUploadImageMutation } from "@/apis/services/image/useImageService";
 import { useOpenAiImageToText } from "@/apis/services/openai/useOpenAiService";
@@ -18,7 +19,6 @@ import { User } from "@/apis/type";
 import { cn } from "@/lib/utils";
 import { ButtonProps } from "../ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { is } from "date-fns/locale";
 
 // Context 정의
 interface ActionToolbarContextProps {
@@ -47,6 +47,7 @@ const ActionToolbar = ({ children }: Props) => {
   const imageToText = useOpenAiImageToText();
   const router = useRouter();
   const toast = useToast();
+  const currentToast = useRef<ReturnType<typeof toast.toast>>();
 
   const isLoading =
     uploadImage.status === "pending" || imageToText.status === "pending";
@@ -76,14 +77,23 @@ const ActionToolbar = ({ children }: Props) => {
   };
 
   useEffect(() => {
+    if (!isLoading && currentToast.current) {
+      setTimeout(() => {
+        toast.dismiss(currentToast.current?.id);
+      }, 0);
+    }
+
     if (!isLoading) {
       return;
     }
 
+    if (currentToast.current) return;
+
     setTimeout(() => {
-      toast.toast({
+      currentToast.current = toast.toast({
         className: cn(
-          "fixed top-4 left-[50%] z-[100] flex w-fit -translate-x-1/2",
+          "fixed top-4 left-[50%] z-[100] flex w-fit translate-x-[-50%]",
+          "data-[state=open]:sm:slide-in-from-top-0 data-[state=open]:sm:slide-in-from-right-0",
         ),
         title: "이미지 업로드 중입니다.",
         description:
@@ -222,11 +232,12 @@ const FolderButton = ({
   if (!context)
     throw new Error("FolderButton must be used within an ActionToolbar");
 
+  const currentPath = usePathname();
   const { user, handleFileChange } = context;
 
   return !user?.id ? (
     <Button
-      href="/auth"
+      href={`/auth?redirectUrl=${currentPath}`}
       className={cn(
         "w-full cursor-pointer br h-full flex justify-center items-center",
         className,

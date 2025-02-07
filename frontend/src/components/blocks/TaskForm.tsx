@@ -35,6 +35,7 @@ import { Label } from "../ui/label";
 import { NotionLogoIcon } from "@radix-ui/react-icons";
 
 enum ITEM_STATUS {
+  ADD = "ADD",
   ORIGIN = "ORIGIN",
   UPDATED = "UPDATED",
 }
@@ -67,6 +68,12 @@ interface TaskFormContextProps extends UseFormReturn<TaskFormData> {
   onSubmitForm: React.FormEventHandler<HTMLFormElement>;
   imageUrl?: string;
   onClickDeleteButton: React.MouseEventHandler<HTMLButtonElement>;
+  onClickAddButton?: React.MouseEventHandler<HTMLButtonElement>;
+  onChangeItemName?: (
+    itemId: string | number,
+  ) => React.ChangeEventHandler<HTMLInputElement>;
+
+  onClickCheckbox?: (itemId: string | number) => void;
 }
 
 const TaskFormContext = createContext<TaskFormContextProps | undefined>(
@@ -110,6 +117,39 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
 
   const createPage = usePostCreatePage();
 
+  const onClickAddButton: React.MouseEventHandler<HTMLButtonElement> = () => {
+    setProperties((prev) => {
+      if (!prev) return prev;
+      return [
+        {
+          id: `${Math.random()}`,
+          name: "",
+          checked: false,
+          type: "checkbox",
+          status: ITEM_STATUS.ADD,
+        },
+        ...prev,
+      ];
+    });
+  };
+
+  const onChangeItemName: (
+    itemId: string | number,
+  ) => React.ChangeEventHandler<HTMLInputElement> = (itemId) => (event) => {
+    setProperties((prev) => {
+      if (!prev) return prev;
+      return prev?.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            name: event.target.value,
+          };
+        }
+        return item;
+      });
+    });
+  };
+
   const onClickDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (
     event,
   ) => {
@@ -140,7 +180,24 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
     });
   };
 
+  const onClickCheckbox = (itemId?: z.infer<typeof ItemSchema>["id"]) => {
+    setProperties((prev) => {
+      if (!prev) return prev;
+      return prev?.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            checked: !item.checked,
+          };
+        }
+        return item;
+      });
+    });
+  };
+
   useEffect(() => {
+    console.log("useEffect 1");
+
     const getCurrentProperty = () => {
       if (!database?.success || !ai?.success) return null;
 
@@ -170,16 +227,30 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
     };
 
     setProperties(() => getCurrentProperty());
-  }, [database?.data?.properties, ai?.data?.contents]);
+  }, [
+    database?.data?.properties,
+    ai?.data?.contents,
+    database?.success,
+    ai?.success,
+  ]);
 
   useEffect(() => {
     if (properties) {
-      properties.forEach((habit) => {
-        const prevItems = formMethods.getValues("items") ?? [];
+      // const prevItems = formMethods.getValues("items")
+      const checked = properties.filter((habit) => {
         if (habit.checked) {
-          formMethods.setValue("items", [...prevItems, habit]);
+          return true;
         }
+        return false;
       });
+
+      const newItems = checked.filter((item, index, self) => {
+        if (!item.checked) return false;
+        return index === self.findIndex((t) => t.id === item.id);
+      });
+
+      console.log(properties, newItems);
+      formMethods.setValue("items", newItems);
     }
 
     if (ai?.data?.contents.date) {
@@ -204,6 +275,9 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
         onSubmitForm,
         imageUrl,
         onClickDeleteButton,
+        onClickAddButton,
+        onChangeItemName,
+        onClickCheckbox,
       }}
     >
       <form className="flex flex-col gap-2 pb-10" onSubmit={onSubmitForm}>
@@ -300,7 +374,13 @@ const TaskFormSelectForm = () => {
 };
 
 const TaskFormCheckBoxForm = () => {
-  const { properties, onClickDeleteButton } = useTaskForm();
+  const {
+    properties,
+    onClickDeleteButton,
+    onClickAddButton,
+    onChangeItemName,
+    onClickCheckbox,
+  } = useTaskForm();
 
   if (!properties) return null;
 
@@ -312,6 +392,9 @@ const TaskFormCheckBoxForm = () => {
       }}
       items={properties}
       onClickDeleteButton={onClickDeleteButton}
+      onClickAddButton={onClickAddButton}
+      onChangeItemName={onChangeItemName}
+      onClickCheckbox={onClickCheckbox}
     />
   );
 };

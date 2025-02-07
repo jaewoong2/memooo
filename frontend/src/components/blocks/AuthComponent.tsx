@@ -21,6 +21,10 @@ const AuthComponent = ({ user }: Props) => {
     if (user && redirectUrl && isMounted()) {
       navigation.replace(redirectUrl);
     }
+
+    if (user && !redirectUrl && isMounted()) {
+      navigation.replace("/");
+    }
   }, [redirectUrl, navigation, user, isMounted]);
 
   return null;

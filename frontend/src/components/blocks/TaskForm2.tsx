@@ -102,17 +102,12 @@ const TaskForm = ({ imageUrl }: Props) => {
   }, [database, ai]);
 
   useEffect(() => {
-    if (properties) {
-      properties.map((habit) => {
-        if (!habit.checked) return;
-        form.setValue("items", [...form.getValues("items"), habit]);
-      });
-    }
+    form.setValue("items", [...form.getValues("items"), ...properties]);
 
     if (ai?.data?.contents.date) {
       form.setValue("date", `${ai.data.contents.date}`);
     }
-  }, [form, properties]);
+  }, [ai?.data?.contents.date, form, properties]);
 
   useEffect(() => {
     if (!ai?.data) {

@@ -55,6 +55,7 @@ interface CheckboxProps
   onChecked?: (checked: boolean) => void;
   prevent?: boolean;
   autoCheck?: boolean;
+  checked?: boolean;
 }
 
 export default function Checkbox({
@@ -65,6 +66,7 @@ export default function Checkbox({
   prevent,
   autoCheck,
   defaultChecked,
+  checked,
   ...props
 }: CheckboxProps) {
   const [isChecked, setIsChecked] = useState(defaultChecked ? true : false);
@@ -81,12 +83,16 @@ export default function Checkbox({
     };
   }, [autoCheck]);
 
+  useEffect(() => {
+    setIsChecked(checked ? true : false);
+  }, [checked]);
+
   return (
     <div className={cn("flex items-center", className)} {...props}>
       <CheckboxContext.Provider
         value={{
           id,
-          isChecked,
+          isChecked: typeof checked === "undefined" ? isChecked : checked,
           setIsChecked,
           onChecked,
           prevent,
@@ -102,6 +108,7 @@ export default function Checkbox({
 function CheckboxIndicator({
   className,
   onChange,
+  onChangeCapture,
   ...props
 }: JSX.IntrinsicElements["input"]) {
   const { id, isChecked, setIsChecked, prevent, onChecked } =
@@ -120,6 +127,17 @@ function CheckboxIndicator({
           if (prevent) return;
           if (onChange && typeof onChange === "function") {
             onChange(event);
+          }
+          setIsChecked(!isChecked);
+
+          if (typeof onChecked === "function") {
+            onChecked(!isChecked);
+          }
+        }}
+        onChangeCapture={(event) => {
+          if (prevent) return;
+          if (onChangeCapture && typeof onChangeCapture === "function") {
+            onChangeCapture(event);
           }
           setIsChecked(!isChecked);
 
