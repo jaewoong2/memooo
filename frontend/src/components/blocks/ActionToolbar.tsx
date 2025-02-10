@@ -102,7 +102,7 @@ const ActionToolbar = ({ children }: Props) => {
         variant: "default",
       });
     }, 0);
-  }, [isLoading, toast]);
+  }, [isLoading]);
 
   return (
     <ActionToolbarContext.Provider

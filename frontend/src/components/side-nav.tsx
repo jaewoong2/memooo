@@ -12,22 +12,26 @@ import { ThemeToggle } from "./theme-toggle";
 import { buttonVariants } from "./ui/button";
 
 const SideNav = () => {
-  const { data: user } = useUserGetMe();
+  const { data: user, isLoading } = useUserGetMe();
   const currentPath = usePathname();
 
   return (
     <nav className="flex items-center gap-3 space-x-1">
       {!currentPath.includes("auth") && !user?.data?.id && (
         <a href={`/auth?redirectUrl=${currentPath}`}>
-          <div
-            className={buttonVariants({
-              size: "icon",
-              variant: "ghost",
-            })}
-          >
-            로그인
-            <span className="sr-only">로그인</span>
-          </div>
+          {isLoading ? (
+            <div className="w-8 h-8 rounded-full bg-neutral-200 animate-pulse border"></div>
+          ) : (
+            <div
+              className={buttonVariants({
+                size: "icon",
+                variant: "ghost",
+              })}
+            >
+              로그인
+              <span className="sr-only">로그인</span>
+            </div>
+          )}
         </a>
       )}
       {user?.data?.id && (

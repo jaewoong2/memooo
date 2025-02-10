@@ -17,6 +17,7 @@ export class S3Service {
       secretAccessKey: this.config.aws.s3.secretAccessKey,
     },
   });
+
   private bucketName = this.config.aws.s3.bucketName;
 
   async uploadImage(file: Express.Multer.File): Promise<string> {
@@ -28,7 +29,15 @@ export class S3Service {
       ContentType: file.mimetype,
     };
 
-    await this.s3.upload(params).promise();
-    return `${this.config.aws.s3.cloudfrontURL}/${key}`; // 업로드된 파일의 URL 반환
+    try {
+      await this.s3.upload(params).promise();
+      return `${this.config.aws.s3.cloudfrontURL}/${key}`; // 업로드된 파일의 URL 반환
+    } catch (err) {
+      console.error('S3 업로드 중 오류 발생:', err);
+      const s3 = new S3();
+
+      await s3.upload(params).promise();
+      return `${this.config.aws.s3.cloudfrontURL}/${key}`; // 업로드된 파일의 URL 반환
+    }
   }
 }

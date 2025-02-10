@@ -155,8 +155,11 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
   ) => {
     setProperties((prev) => {
       if (!prev) return prev;
-      return prev?.filter(({ name }) => {
-        if (event.currentTarget && event.currentTarget.id === name) {
+      return prev?.filter((_, index) => {
+        if (
+          event.currentTarget &&
+          `${event.currentTarget.dataset.index}` === `${index}`
+        ) {
           return false;
         }
         return true;
@@ -196,8 +199,6 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
   };
 
   useEffect(() => {
-    console.log("useEffect 1");
-
     const getCurrentProperty = () => {
       if (!database?.success || !ai?.success) return null;
 
@@ -249,7 +250,6 @@ export const TaskFormProvider = ({ children, imageUrl }: Props) => {
         return index === self.findIndex((t) => t.id === item.id);
       });
 
-      console.log(properties, newItems);
       formMethods.setValue("items", newItems);
     }
 
@@ -296,7 +296,7 @@ const TaskFormImage = () => {
     <div className="bg-background rounded-xl p-6 border">
       <Label className="text-base">사진 등록하기</Label>
       <p className="text-[0.8rem] text-muted-foreground flex gap-1 items-center">
-        <NotionLogoIcon /> 사진을 등록하고 동기화 해요
+        <NotionLogoIcon /> 오늘 기록을 올려주세요
       </p>
       <div className="relative">
         <div className="relative w-auto h-[160px] overflow-hidden border rounded-lg mt-4">
@@ -322,10 +322,10 @@ const TaskFormImageAction = ({
   ...props
 }: ButtonProps) => {
   return (
-    <div className="bg-background rounded-xl p-6 border ">
-      <Label className="text-base">사진 등록하기</Label>
+    <div className="bg-background rounded-xl p-6 border">
+      <Label className="text-base">기록하기</Label>
       <p className="text-[0.8rem] text-muted-foreground flex gap-1 items-center">
-        <NotionLogoIcon /> 사진을 등록하고 동기화 해요
+        <NotionLogoIcon /> 오늘 기록을 올려주세요
       </p>
       <ActionToolbar>
         <ActionToolbar.CameraButton
@@ -333,7 +333,7 @@ const TaskFormImageAction = ({
           className={buttonVariants({
             variant: "outline",
             className: cn(
-              "w-full px-6 h-[120px] border justify-center shadow-none rounded-lg text-foreground",
+              "w-full px-6 my-4 h-[120px] border justify-center shadow-none rounded-lg text-foreground",
               "flex-col gap-0",
               className,
             ),

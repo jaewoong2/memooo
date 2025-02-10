@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 
@@ -10,10 +11,9 @@ const Greeting = () => {
     const updateDateAndGreeting = () => {
       const now = dayjs();
       setDateText(now.format("YYYY.MM.DD dddd"));
-
       const hour = now.hour();
       if (hour < 12) {
-        setGreeting("좋은 아침이에요 ☀️");
+        setGreeting("좋은 아침이에요 ☀️ ");
       } else if (hour < 18) {
         setGreeting("오후에도 즐겁게 🚀");
       } else {
@@ -29,10 +29,26 @@ const Greeting = () => {
   }, []);
 
   return (
-    <>
-      <div className="text-sm text-muted-foreground px-4">{dateText}</div>
-      <div className="text-lg font-semibold relative px-4">{greeting}</div>
-    </>
+    <div className="px-6">
+      <div
+        className={cn(
+          "text-sm text-muted-foreground",
+          !dateText &&
+            "w-36 h-5 bg-neutral-200 border animate-pulse rounded-md",
+        )}
+      >
+        {dateText}
+      </div>
+      <div
+        className={cn(
+          "text-lg font-semibold relative",
+          !greeting &&
+            "w-72 h-5 bg-neutral-200 border animate-pulse rounded-md mt-2",
+        )}
+      >
+        {greeting}
+      </div>
+    </div>
   );
 };
 

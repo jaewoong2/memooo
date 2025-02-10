@@ -92,7 +92,7 @@ export function CheckBoxForm({
             </Button>
           </div>
           {items?.map(
-            (item) =>
+            (item, index) =>
               item.type === "checkbox" && (
                 <FormField
                   key={item.id}
@@ -168,7 +168,7 @@ export function CheckBoxForm({
                         </FormItem>
                         {item.status !== ITEM_STATUS.ORIGIN && (
                           <button
-                            id={item.name}
+                            data-index={index}
                             onClick={onClickDeleteButton}
                             type="button"
                             className="w-[72px] h-full text-xl bg-red-400/90 whitespace-nowrap flex justify-center items-center hover:bg-red-400/80 transition-colors"

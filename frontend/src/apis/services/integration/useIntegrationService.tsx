@@ -19,6 +19,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { NotionLogoIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 
 export const useAddToCalander = (
   options?: Omit<
@@ -71,6 +72,7 @@ export const usePostCreatePage = (
     "mutationKey" | "mutationFn"
   >,
 ) => {
+  const router = useRouter();
   const mutate = useMutation({
     ...queryOptions.createPage(),
     ...options,
@@ -91,6 +93,8 @@ export const usePostCreatePage = (
           ),
         });
       }
+
+      router.push("/");
 
       if (options?.onSuccess) {
         options.onSuccess(data, variables, context);

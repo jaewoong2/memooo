@@ -11,14 +11,13 @@ const nextConfig: NextConfig = {
       destination:
         process.env.NODE_ENV === "development"
           ? `http://localhost:3001/api/:path*`
-          : "http://backend/api/:path*",
+          : "https://api-habbits.bamtoly.com/api/:path*",
     },
   ],
   assetPrefix:
-    process.env.NODE_ENV !== "development"
+    process.env.NODE_ENV === "development"
       ? undefined
-      : // ? "https://static-habbits.bamtoly.com"
-        undefined,
+      : "https://static-habbits.bamtoly.com",
   output: "standalone",
   images: {
     remotePatterns: [

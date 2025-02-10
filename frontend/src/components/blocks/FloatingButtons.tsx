@@ -6,9 +6,11 @@ const FloatingButtons = () => {
   return (
     <ActionToolbar>
       <ActionToolbar.Layout>
-        <ActionToolbar.PlusButton className="w-full" />
+        {/* <ActionToolbar.PlusButton className="w-full" /> */}
+        <div />
         <ActionToolbar.CameraButton />
-        <ActionToolbar.FolderButton />
+        <div />
+        {/* <ActionToolbar.FolderButton /> */}
       </ActionToolbar.Layout>
     </ActionToolbar>
   );
